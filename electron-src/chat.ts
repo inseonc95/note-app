@@ -1,8 +1,24 @@
 import OpenAI from "openai"
+import fs from "fs"
+import { join } from "path"
 
-const openai = new OpenAI({
-  apiKey: "your-openai-key",
-})
+// API Key management
+const API_KEY_PATH = join(__dirname, "api_key.json");
+
+export const loadApiKey = () => {
+  try {
+    if (fs.existsSync(API_KEY_PATH)) {
+      const data = fs.readFileSync(API_KEY_PATH, "utf-8");
+      return JSON.parse(data).apiKey;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error loading API key:", error);
+    return null;
+  }
+};
+
+
 
 export interface ChatMessage {
   role: "user" | "assistant" | "system"
@@ -33,6 +49,10 @@ export async function generateChatResponse(
       }] : [])
     ]
 
+    const openai = new OpenAI({
+      apiKey: loadApiKey(),
+    })
+
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: allMessages,
@@ -42,7 +62,6 @@ export async function generateChatResponse(
 
     return response.choices[0].message.content
   } catch (error) {
-    console.error("Error generating chat response:", error)
-    throw error
+    return false
   }
 } 

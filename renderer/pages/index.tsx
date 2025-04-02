@@ -39,12 +39,9 @@ const IndexPage = () => {
 
       {/* 오른쪽: AI 채팅 (20-25%) */}
       <div className="w-1/4 border-l bg-accent flex flex-col">
-        <div className="flex h-14 items-center border-b px-4">
-          <h2 className="text-lg font-semibold">AI Assistant</h2>
-        </div>
-        <div className="flex-1 overflow-hidden">
+
           <AIChat ref={aiChatRef} />
-        </div>
+
       </div>
     </div>
   );

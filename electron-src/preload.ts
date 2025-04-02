@@ -13,4 +13,8 @@ contextBridge.exposeInMainWorld("electron", {
   stopReceivingHello: (
     handler: (event: IpcRendererEvent, ...args: any[]) => void,
   ) => ipcRenderer.removeListener("message", handler),
+  checkApiKey: () => ipcRenderer.invoke("check-api-key"),
+  saveApiKey: (apiKey: string) => ipcRenderer.send("save-api-key", apiKey),
+  receiveApiKeySaved: (handler: (event: IpcRendererEvent, ...args: any[]) => void) =>
+    ipcRenderer.on("api-key-saved", handler),
 });

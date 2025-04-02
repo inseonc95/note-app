@@ -3,7 +3,7 @@ import { useChat } from "@/contexts/ChatContext"
 import { useNotes } from "@/contexts/NoteContext"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Trash2, Copy, Check, CheckCircle, X } from "lucide-react"
+import { Send, Trash2, Copy, Check, CheckCircle, X, Key } from "lucide-react"
 import { useState } from "react"
 import {
   Tooltip,
@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { ApiKeyButton } from "./ApiKeyButton"
 
 export interface AIChatRef {
   focus: () => void
@@ -33,6 +34,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [appliedId, setAppliedId] = useState<string | null>(null)
+  const [hasApiKey, setHasApiKey] = useState(false)
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -62,6 +64,22 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     return () => {
       window.electron.stopReceivingHello(handleHello)
     }
+  }, [])
+
+  useEffect(() => {
+    const checkApiKey = async () => {
+      const hasKey = await window.electron.checkApiKey()
+      setHasApiKey(hasKey)
+    }
+    checkApiKey()
+  }, [])
+
+  useEffect(() => {
+    const handleApiKeySaved = () => {
+      setHasApiKey(true)
+    }
+    window.electron.receiveApiKeySaved(handleApiKeySaved)
+    
   }, [])
 
   const handleCopy = async (messageId: string, content: string) => {
@@ -130,9 +148,16 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
   }
 
   return (
+<>
+  <div className="flex h-14 items-center border-b px-4">
+    <h2 className="text-lg font-semibold">AI Assistant</h2><ApiKeyButton />
+  </div>
+
+  <div className="flex-1 overflow-hidden">
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full">
+        
           <div className="p-4 space-y-4">
             {messages.map((message) => (
               <div
@@ -253,25 +278,31 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
             <textarea
               ref={inputRef}
               className="flex-1 resize-none rounded-md border p-2 text-sm bg-background"
-              placeholder="메시지를 입력하세요..."
+              placeholder={hasApiKey ? "메시지를 입력하세요..." : "API 키를 등록해주세요"}
               rows={1}
-              disabled={isLoading}
+              disabled={isLoading || !hasApiKey}
             />
-            <Button type="submit" size="icon" disabled={isLoading}>
-              <Send className="size-4" />
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={clearMessages}
-              disabled={isLoading}
-            >
-              <Trash2 className="size-4" />
-            </Button>
+            {hasApiKey && (
+              <>
+                <Button type="submit" size="icon" disabled={isLoading}>
+                  <Send className="size-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={clearMessages}
+                  disabled={isLoading}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              </>
+            )}
           </form>
         </div>
       </div>
     </div>
+    </div>
+    </>
   )
 }) 
