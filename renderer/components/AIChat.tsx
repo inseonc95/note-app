@@ -91,10 +91,13 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     const userMessage = inputRef.current.value.trim()
     inputRef.current.value = ""
     addMessage("user", userMessage)
-
     setIsLoading(true)
     try {
-      const apiMessages = messages.map(msg => ({
+      const updatedMessages = [
+        ...messages,
+        { role: "user" as const, content: userMessage }
+      ]
+      const apiMessages = updatedMessages.map(msg => ({
         role: msg.role as "user" | "assistant",
         content: msg.content
       }))

@@ -17,14 +17,28 @@ export async function generateChatResponse(
   try {
     const systemMessage: ChatMessage = {
       role: "system",
-      content: `You are a helpful AI assistant that helps users with their notes. 
-      ${noteContent ? `The current note content is: ${noteContent}` : ""}
-      Please provide helpful and concise responses.`,
+      content: `You are a helpful AI assistant. 
+      Always focus on answering the current question directly and clearly.
+      Use previous conversation context only as reference, but don't dwell on it.
+      Keep your responses concise and to the point.
+      If you're unsure about something, say so directly.`,
     }
+
+    // 노트 내용을 마지막 메시지로 추가
+    const allMessages = [
+      systemMessage,
+      ...messages,
+      ...(noteContent ? [{
+        role: "system" as const,
+        content: `Current note content: ${noteContent}`
+      }] : [])
+    ]
+
+    console.log("Messages being sent:", allMessages)
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
-      messages: [systemMessage, ...messages],
+      messages: allMessages,
       temperature: 0.7,
       max_tokens: 500,
     })
