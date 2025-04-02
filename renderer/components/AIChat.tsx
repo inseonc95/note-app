@@ -139,7 +139,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                      : "bg-background"
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap">
@@ -163,18 +163,31 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
                             <Copy className="size-3" />
                           )}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6"
-                          onClick={() => handleApply(message.id, message.content)}
-                        >
-                          {appliedId === message.id ? (
-                            <CheckCircle className="size-3 text-green-500" />
-                          ) : (
-                            <CheckCircle className="size-3" />
-                          )}
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => handleApply(message.id, message.content)}
+                              >
+                                {appliedId === message.id ? (
+                                  <CheckCircle className="size-3 text-green-500" />
+                                ) : (
+                                  <CheckCircle className="size-3" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {selectedNote ? (
+                                <p>"{selectedNote?.title}"에 적용됩니다</p>
+                              ) : (
+                                <p>적용할 메모를 선택해주세요</p>
+                              )}
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     )}
                   </div>
@@ -199,7 +212,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
               <TooltipProvider key={text.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <div className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs">
+                    <div className="flex items-center gap-1 bg-background text-secondary-foreground px-2 py-1 rounded-md text-xs">
                       <span className="truncate max-w-[100px]">
                         {text.content}
                       </span>
@@ -233,7 +246,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
           <form onSubmit={handleSubmit} className="flex gap-2">
             <textarea
               ref={inputRef}
-              className="flex-1 resize-none rounded-md border p-2 text-sm"
+              className="flex-1 resize-none rounded-md border p-2 text-sm bg-background"
               placeholder="메시지를 입력하세요..."
               rows={1}
               disabled={isLoading}

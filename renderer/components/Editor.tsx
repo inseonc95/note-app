@@ -2,7 +2,7 @@ import { useNotes } from "@/contexts/NoteContext"
 import { useRef, useEffect, useState } from "react"
 import { AIChatRef } from "./AIChat"
 import { Button } from "@/components/ui/button"
-import { Plus, Send, X } from "lucide-react"
+import { Command, Send, X, Plus } from "lucide-react"
 import { useChat } from "@/contexts/ChatContext"
 
 interface EditorProps {
@@ -143,13 +143,17 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
               }}
             >
               <Button
-                variant="ghost"
                 size="sm"
                 className="h-6 text-xs"
                 onClick={handleAddToChat}
               >
-                <Plus className="size-3 mr-1" />
-                Add to chat
+                <span
+                >Add to chat</span>
+                <div className="flex items-center text-gray-400">
+                  <Command className="size-3 ml-2" />
+                  <span className="font-mono">K</span>
+                  
+                </div>
               </Button>
             </div>
           )}

@@ -19,7 +19,7 @@ const IndexPage = () => {
   return (
     <div className="flex h-[calc(100vh-28px)]">
       {/* 왼쪽: 노트 목록 (20-25%) */}
-      <div className="w-1/4 border-r bg-background flex flex-col">
+      <div className="w-1/4 border-r bg-accent flex flex-col">
         <div className="flex h-14 items-center border-b px-4">
           <h2 className="text-lg font-semibold">Notes</h2>
           <Button variant="ghost" size="icon" className="ml-auto" onClick={handleAddNote}>
@@ -32,16 +32,13 @@ const IndexPage = () => {
       </div>
       {/* 중앙: 에디터 (50-60%) */}
       <div className="w-1/2 flex flex-col">
-        <div className="flex h-14 items-center border-b px-4">
-          <h2 className="text-lg font-semibold">Editor</h2>
-        </div>
         <div className="flex-1 overflow-hidden">
           <Editor aiChatRef={aiChatRef} />
         </div>
       </div>
 
       {/* 오른쪽: AI 채팅 (20-25%) */}
-      <div className="w-1/4 border-l bg-background flex flex-col">
+      <div className="w-1/4 border-l bg-accent flex flex-col">
         <div className="flex h-14 items-center border-b px-4">
           <h2 className="text-lg font-semibold">AI Assistant</h2>
         </div>

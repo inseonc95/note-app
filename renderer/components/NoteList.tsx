@@ -14,8 +14,8 @@ export function NoteList() {
           <div
             key={note.id}
             className={cn(
-              "group flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-accent hover:text-accent-foreground",
-              selectedNote?.id === note.id && "bg-accent text-accent-foreground"
+              "group flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-background hover:text-accent-foreground",
+              selectedNote?.id === note.id && "bg-background text-accent-foreground"
             )}
             onClick={() => selectNote(note.id)}
           >

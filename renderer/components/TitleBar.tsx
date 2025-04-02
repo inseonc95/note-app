@@ -1,11 +1,10 @@
 const TitleBar = () => {
   return (
-    <div className="titlebar">
-      <div className="titlebar-drag">Kylie Desktop App</div>
+    <div className="titlebar bg-accent">
+      <div className="titlebar-drag ">Kylie's Note App</div>
       <style jsx>{`
         .titlebar {
           height: 28px;
-          background: transparent;
           display: flex;
           justify-content: center;
           align-items: center;
