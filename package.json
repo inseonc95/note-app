@@ -1,7 +1,9 @@
 {
   "private": true,
+  "name": "kylie-desktop-app",
+  "version": "1.0.0",
   "main": "main/index.js",
-  "productName": "ElectronTypescriptNext",
+  "productName": "Kylie Desktop App",
   "scripts": {
     "clean": "rimraf dist main renderer/out renderer/.next",
     "dev": "npm run build-electron && electron .",
