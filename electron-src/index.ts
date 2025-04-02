@@ -14,6 +14,7 @@ app.on("ready", async () => {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    titleBarStyle: 'hiddenInset', // macOS native style
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
