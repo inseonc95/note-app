@@ -1,15 +1,15 @@
 // Native
 import { join } from "path";
 import { format } from "url";
-import { dialog } from "electron";
 import fs from "fs";
 
 // Packages
-import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron";
+import { BrowserWindow, app, ipcMain, IpcMainInvokeEvent } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
 import { generateChatResponse } from "./chat";
+import { OpenAI } from "openai";
 
 // Prepare the renderer once the app is ready
 app.on("ready", async () => {
@@ -48,23 +48,30 @@ ipcMain.handle("check-api-key", () => {
 });
 
 // listen the channel `message` and resend the received message to the renderer process
-ipcMain.on("message", async (event: IpcMainEvent, message: any, noteContent?: any) => {
-  const response = await generateChatResponse(message, noteContent? noteContent : null);
-  if (!response) {
-    dialog.showMessageBox({
-      title: 'Error',
-      message: 'Invalid API key. Please check your API key and try again.',
-    });
-    return;
+ipcMain.handle("message", async (_event: IpcMainInvokeEvent, message: any, noteContent?: any) => {
+
+  try {
+    const response = await generateChatResponse(message, noteContent? noteContent : null);
+    return response;
+  } catch (error) {
+    console.error("Error generating chat response:", error);
+    throw error;
   }
-  setTimeout(() => event.sender.send("message", response), 500);
 });
 
-ipcMain.on("save-api-key", async (event: IpcMainEvent, apiKey: string) => {
-  fs.writeFileSync(API_KEY_PATH, JSON.stringify({ apiKey }));
-  console.log("API Key saved:", apiKey);
-
-  setTimeout(() => {
-    event.sender.send("api-key-saved");
-  }, 1000);
+ipcMain.handle("save-api-key", async (_event: IpcMainInvokeEvent, apiKey: string) => {
+  try {
+    const openai = new OpenAI({ apiKey });
+    await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: "test" }],
+      max_tokens: 1
+    });
+    fs.writeFileSync(API_KEY_PATH, JSON.stringify({ apiKey }));
+    console.log("API Key saved:", apiKey);
+    return true;
+  } catch (error) {
+    console.error("Error saving API key:", error);
+    throw error;
+  }
 });

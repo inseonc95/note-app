@@ -15,14 +15,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Settings } from "lucide-react"
 
-export const ApiKeyButton = () => {
+export const ApiKeyButton = ({ handleSave }: { handleSave: (apiKey: string) => void }) => {
   const [apiKey, setApiKey] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleSave = async () => {
-    await window.electron.saveApiKey(apiKey);
-    setIsOpen(false);
-  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -57,7 +54,16 @@ export const ApiKeyButton = () => {
             <Button variant="outline" onClick={() => setIsOpen(false)}>
               취소
             </Button>
-            <Button onClick={handleSave}>등록</Button>
+            <Button onClick={async () => {
+              try {
+                await handleSave(apiKey)
+                setIsOpen(false)
+              } catch (error) {
+                console.error("API 키 등록에 실패했습니다. 다시 시도해주세요.", error)
+              } finally {
+                setIsOpen(false)
+              }
+            }}>등록</Button>
           </DialogFooter>
         </div>
       </DialogContent>

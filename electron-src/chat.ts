@@ -62,6 +62,6 @@ export async function generateChatResponse(
 
     return response.choices[0].message.content
   } catch (error) {
-    return false
+    throw error
   }
 } 

@@ -55,16 +55,6 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     scrollToBottom()
   }, [messages])
 
-  useEffect(() => {
-    const handleHello = (event: any, message: string) => {
-      addMessage("assistant", message)
-    }
-
-    window.electron.receiveHello(handleHello)
-    return () => {
-      window.electron.stopReceivingHello(handleHello)
-    }
-  }, [])
 
   useEffect(() => {
     const checkApiKey = async () => {
@@ -72,14 +62,6 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
       setHasApiKey(hasKey)
     }
     checkApiKey()
-  }, [])
-
-  useEffect(() => {
-    const handleApiKeySaved = () => {
-      setHasApiKey(true)
-    }
-    window.electron.receiveApiKeySaved(handleApiKeySaved)
-    
   }, [])
 
   const handleCopy = async (messageId: string, content: string) => {
@@ -91,6 +73,18 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
       console.error("Failed to copy text:", err)
     }
   }
+
+  const handleSave = async (apiKey: string) => {
+    try {
+      const response = await window.electron.saveApiKey(apiKey);
+      if (response) {
+        alert("API 키 등록에 성공했습니다.");
+        setHasApiKey(true);
+      }
+    } catch (error) {
+      alert("API 키 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
 
   const handleApply = async (messageId: string, content: string) => {
     if (!selectedNote) return
@@ -132,12 +126,13 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
       // 선택된 텍스트들을 컨텍스트로 포함
       const contextTexts = selectedTexts.map(text => text.content).join("\n\n")
-      window.electron.sayHello(
+      const response = await window.electron.sayHello(
         apiMessages,
         contextTexts || null
       )
+
+      addMessage("assistant", response)
     } catch (error) {
-      console.error("Error:", error)
       addMessage(
         "assistant",
         "죄송합니다. AI 응답을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요."
@@ -150,7 +145,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
   return (
 <>
   <div className="flex h-14 items-center border-b px-4">
-    <h2 className="text-lg font-semibold">AI Assistant</h2><ApiKeyButton />
+    <h2 className="text-lg font-semibold">AI Assistant</h2><ApiKeyButton handleSave={handleSave} />
   </div>
 
   <div className="flex-1 overflow-hidden">

@@ -11,11 +11,8 @@ declare global {
     electron: {
       sayHello: (  messages: ChatMessage[],
         noteContent?: string) => Promise<string>;
-      receiveHello: (handler: (event, args) => void) => void;
-      stopReceivingHello: (handler: (event, args) => void) => void;
       checkApiKey: () => Promise<boolean>;
-      saveApiKey: (apiKey: string) => Promise<void>;
-      receiveApiKeySaved: (handler: (event, args) => void) => void;
+      saveApiKey: (apiKey: string) => Promise<boolean>;
     };
   }
 }
