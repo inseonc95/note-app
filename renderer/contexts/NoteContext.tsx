@@ -15,7 +15,8 @@ interface NoteContextType {
   updateNoteContent: (id: string, content: string) => void
   updateNoteTitle: (id: string, title: string) => void
   deleteNote: (id: string) => void
-  selectNote: (id: string | null) => void
+  selectNote: (id: string) => void
+  updateNote: (id: string, note: Note) => void
 }
 
 const NoteContext = createContext<NoteContextType | undefined>(undefined)
@@ -81,9 +82,18 @@ export function NoteProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const selectNote = (id: string | null) => {
-    const note = id ? notes.find((n) => n.id === id) || null : null
-    setSelectedNote(note)
+  const selectNote = (id: string) => {
+    const note = notes.find((note) => note.id === id)
+    setSelectedNote(note || null)
+  }
+
+  const updateNote = (id: string, updatedNote: Note) => {
+    setNotes((prev) =>
+      prev.map((note) => (note.id === id ? updatedNote : note))
+    )
+    if (selectedNote?.id === id) {
+      setSelectedNote(updatedNote)
+    }
   }
 
   return (
@@ -96,6 +106,7 @@ export function NoteProvider({ children }: { children: ReactNode }) {
         updateNoteTitle,
         deleteNote,
         selectNote,
+        updateNote,
       }}
     >
       {children}
