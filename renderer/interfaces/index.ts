@@ -4,12 +4,13 @@
 //
 // import User from 'path/to/interfaces';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-
+import { ChatMessage } from "@/utils/chat";
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   interface Window {
     electron: {
-      sayHello: () => void;
+      sayHello: (  messages: ChatMessage[],
+        noteContent?: string) => Promise<string>;
       receiveHello: (handler: (event, args) => void) => void;
       stopReceivingHello: (handler: (event, args) => void) => void;
     };

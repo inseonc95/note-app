@@ -7,6 +7,8 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 
+import { generateChatResponse } from "./chat";
+
 // Prepare the renderer once the app is ready
 app.on("ready", async () => {
   await prepareNext("./renderer");
@@ -37,7 +39,7 @@ app.on("ready", async () => {
 app.on("window-all-closed", app.quit);
 
 // listen the channel `message` and resend the received message to the renderer process
-ipcMain.on("message", (event: IpcMainEvent, message: any) => {
-  console.log(message);
-  setTimeout(() => event.sender.send("message", "hi from electron"), 500);
+ipcMain.on("message", async (event: IpcMainEvent, message: any, noteContent?: any) => {
+  const response = await generateChatResponse(message, noteContent? noteContent : null);
+  setTimeout(() => event.sender.send("message", response), 500);
 });

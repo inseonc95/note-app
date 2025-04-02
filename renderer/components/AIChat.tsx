@@ -4,7 +4,6 @@ import { useNotes } from "@/contexts/NoteContext"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Send, Trash2, Copy, Check, CheckCircle, X } from "lucide-react"
-import { generateChatResponse } from "@/utils/chat"
 import { useState } from "react"
 import {
   Tooltip,
@@ -53,6 +52,17 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
   useEffect(() => {
     scrollToBottom()
   }, [messages])
+
+  useEffect(() => {
+    const handleHello = (event: any, message: string) => {
+      addMessage("assistant", message)
+    }
+
+    window.electron.receiveHello(handleHello)
+    return () => {
+      window.electron.stopReceivingHello(handleHello)
+    }
+  }, [])
 
   const handleCopy = async (messageId: string, content: string) => {
     try {
@@ -104,14 +114,10 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
       // 선택된 텍스트들을 컨텍스트로 포함
       const contextTexts = selectedTexts.map(text => text.content).join("\n\n")
-      const response = await generateChatResponse(
+      window.electron.sayHello(
         apiMessages,
         contextTexts || null
       )
-
-      if (response) {
-        addMessage("assistant", response)
-      }
     } catch (error) {
       console.error("Error:", error)
       addMessage(
