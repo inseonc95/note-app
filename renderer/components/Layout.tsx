@@ -8,20 +8,10 @@ type Props = {
   title?: string;
 };
 
-const Layout = ({ children, title = "This is the default title" }: Props) => (
-  <div>
-    <Head>
-      <title>{title}hiddddddddd</title>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="initial-scale=1.0, width=device-width" />
-    </Head>
+const Layout = ({ children }: Props) => (
+  <div className="flex h-screen flex-col">
     <TitleBar />
-    <main>{children}</main>
-    <style jsx>{`
-      main {
-        padding: 20px;
-      }
-    `}</style>
+    <main className="flex-1 overflow-hidden">{children}</main>
   </div>
 );
 

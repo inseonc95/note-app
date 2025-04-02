@@ -1,0 +1,112 @@
+import { createContext, useContext, useState, ReactNode } from "react"
+
+interface Note {
+  id: string
+  title: string
+  content: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+interface NoteContextType {
+  notes: Note[]
+  selectedNote: Note | null
+  addNote: (title: string) => void
+  updateNoteContent: (id: string, content: string) => void
+  updateNoteTitle: (id: string, title: string) => void
+  deleteNote: (id: string) => void
+  selectNote: (id: string | null) => void
+}
+
+const NoteContext = createContext<NoteContextType | undefined>(undefined)
+
+export function NoteProvider({ children }: { children: ReactNode }) {
+  const [notes, setNotes] = useState<Note[]>([
+    {
+      id: "1",
+      title: "Welcome Note",
+      content: "Welcome to your new note-taking app!",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+  ])
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+
+  const addNote = (title: string) => {
+    const newNote: Note = {
+      id: Date.now().toString(),
+      title,
+      content: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }
+    setNotes((prev) => [...prev, newNote])
+    setSelectedNote(newNote)
+  }
+
+  const updateNoteContent = (id: string, content: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? { ...note, content, updatedAt: new Date() }
+          : note
+      )
+    )
+    if (selectedNote?.id === id) {
+      setSelectedNote((prev) =>
+        prev ? { ...prev, content, updatedAt: new Date() } : null
+      )
+    }
+  }
+
+  const updateNoteTitle = (id: string, title: string) => {
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.id === id
+          ? { ...note, title, updatedAt: new Date() }
+          : note
+      )
+    )
+    if (selectedNote?.id === id) {
+      setSelectedNote((prev) =>
+        prev ? { ...prev, title, updatedAt: new Date() } : null
+      )
+    }
+  }
+
+  const deleteNote = (id: string) => {
+    setNotes((prev) => prev.filter((note) => note.id !== id))
+    if (selectedNote?.id === id) {
+      setSelectedNote(null)
+    }
+  }
+
+  const selectNote = (id: string | null) => {
+    const note = id ? notes.find((n) => n.id === id) || null : null
+    setSelectedNote(note)
+  }
+
+  return (
+    <NoteContext.Provider
+      value={{
+        notes,
+        selectedNote,
+        addNote,
+        updateNoteContent,
+        updateNoteTitle,
+        deleteNote,
+        selectNote,
+      }}
+    >
+      {children}
+    </NoteContext.Provider>
+  )
+}
+
+export function useNotes() {
+  const context = useContext(NoteContext)
+  if (context === undefined) {
+    throw new Error("useNotes must be used within a NoteProvider")
+  }
+  return context
+} 
