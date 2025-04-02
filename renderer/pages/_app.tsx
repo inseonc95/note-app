@@ -6,12 +6,12 @@ import { ChatProvider } from "@/contexts/ChatContext"
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <NoteProvider>
-      <ChatProvider>
+    <ChatProvider>
+      <NoteProvider>
         <Layout>
           <Component {...pageProps} />
         </Layout>
-      </ChatProvider>
-    </NoteProvider>
+      </NoteProvider>
+    </ChatProvider>
   )
 } 

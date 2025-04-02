@@ -106,7 +106,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
       const contextTexts = selectedTexts.map(text => text.content).join("\n\n")
       const response = await generateChatResponse(
         apiMessages,
-        contextTexts || selectedNote?.content
+        contextTexts || null
       )
 
       if (response) {
@@ -194,32 +194,32 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
       </div>
       <div className="border-t">
         <div className="p-2">
-          {selectedTexts.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-2">
-              {selectedTexts.map((text) => (
-                <TooltipProvider key={text.id}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs">
-                        <span className="truncate max-w-[100px]">
-                          {text.content}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-4 w-4"
-                          onClick={() => removeSelectedText(text.id)}
-                        >
-                          <X className="size-3" />
-                        </Button>
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="max-w-xs whitespace-pre-wrap">{text.content}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              ))}
+          <div className="flex flex-wrap gap-1 mb-2">
+            {selectedTexts.map((text) => (
+              <TooltipProvider key={text.id}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-xs">
+                      <span className="truncate max-w-[100px]">
+                        {text.content}
+                      </span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4"
+                        onClick={() => removeSelectedText(text.id)}
+                      >
+                        <X className="size-3" />
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs whitespace-pre-wrap">{text.content}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+            {selectedTexts.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -228,8 +228,8 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
               >
                 Clear all
               </Button>
-            </div>
-          )}
+            )}
+          </div>
           <form onSubmit={handleSubmit} className="flex gap-2">
             <textarea
               ref={inputRef}

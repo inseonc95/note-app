@@ -34,8 +34,6 @@ export async function generateChatResponse(
       }] : [])
     ]
 
-    console.log("Messages being sent:", allMessages)
-
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: allMessages,

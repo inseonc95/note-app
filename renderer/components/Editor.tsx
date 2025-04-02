@@ -2,7 +2,7 @@ import { useNotes } from "@/contexts/NoteContext"
 import { useRef, useEffect, useState } from "react"
 import { AIChatRef } from "./AIChat"
 import { Button } from "@/components/ui/button"
-import { Plus } from "lucide-react"
+import { Plus, Send, X } from "lucide-react"
 import { useChat } from "@/contexts/ChatContext"
 
 interface EditorProps {
@@ -16,6 +16,7 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
   const editorRef = useRef<HTMLTextAreaElement>(null)
   const [showButton, setShowButton] = useState(false)
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
+  const [content, setContent] = useState(selectedNote?.content || "")
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (selectedNote) {
@@ -26,12 +27,27 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
     }
   }
 
-  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newContent = e.target.value
+    setContent(newContent)
     if (selectedNote) {
       updateNote(selectedNote.id, {
         ...selectedNote,
-        content: e.target.value,
+        content: newContent,
       })
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault()
+      const editor = editorRef.current
+      if (!editor) return
+
+      const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
+      if (selectedText.trim()) {
+        addSelectedText(selectedText)
+      }
     }
   }
 
@@ -39,21 +55,15 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
     const editor = editorRef.current
     if (!editor) return
 
-    const selectedText = editor.value.substring(
-      editor.selectionStart,
-      editor.selectionEnd
-    ).trim()
-
-    if (selectedText) {
+    const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
+    if (selectedText.trim()) {
       const rect = editor.getBoundingClientRect()
-      const lineHeight = parseInt(getComputedStyle(editor).lineHeight)
+      const lineHeight = parseInt(window.getComputedStyle(editor).lineHeight)
       const lines = selectedText.split("\n").length
-      const scrollTop = editor.scrollTop
+      const top = rect.top + (lineHeight * lines) + 5
+      const left = rect.left + 5
 
-      setButtonPosition({
-        top: rect.top + (lineHeight * lines) - scrollTop - 40,
-        left: rect.left + (rect.width / 2) - 50,
-      })
+      setButtonPosition({ top, left })
       setShowButton(true)
     } else {
       setShowButton(false)
@@ -64,12 +74,8 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
     const editor = editorRef.current
     if (!editor) return
 
-    const selectedText = editor.value.substring(
-      editor.selectionStart,
-      editor.selectionEnd
-    ).trim()
-
-    if (selectedText) {
+    const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
+    if (selectedText.trim()) {
       addSelectedText(selectedText)
       setShowButton(false)
     }
@@ -87,30 +93,18 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
       handleSelection()
     }
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault()
-        const selectedText = editor.value.substring(
-          editor.selectionStart,
-          editor.selectionEnd
-        ).trim()
-        
-        if (selectedText) {
-          addSelectedText(selectedText)
-        }
-      }
-    }
-
     editor.addEventListener("mouseup", handleMouseUp)
     editor.addEventListener("keyup", handleKeyUp)
-    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
       editor.removeEventListener("mouseup", handleMouseUp)
       editor.removeEventListener("keyup", handleKeyUp)
-      document.removeEventListener("keydown", handleKeyDown)
     }
-  }, [addSelectedText])
+  }, [])
+
+  useEffect(() => {
+    setContent(selectedNote?.content || "")
+  }, [selectedNote])
 
   if (!selectedNote) {
     return (
@@ -123,7 +117,7 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-hidden">
-        <div className="p-4 space-y-4">
+        <div className="p-4 space-y-4 relative">
           <textarea
             ref={titleRef}
             className="w-full resize-none border-none bg-transparent text-2xl font-bold focus:outline-none"
@@ -135,15 +129,17 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
             ref={editorRef}
             className="w-full h-[calc(100vh-12rem)] resize-none border-none bg-transparent focus:outline-none"
             placeholder="내용을 입력하세요..."
-            value={selectedNote?.content || ""}
-            onChange={handleContentChange}
+            value={content}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onSelect={handleSelection}
           />
           {showButton && (
             <div
-              className="absolute bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-lg"
+              className="fixed z-50 bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-lg"
               style={{
-                top: buttonPosition.top,
-                left: buttonPosition.left,
+                top: `${buttonPosition.top}px`,
+                left: `${buttonPosition.left}px`,
               }}
             >
               <Button

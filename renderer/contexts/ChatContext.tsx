@@ -46,11 +46,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }
 
   const addSelectedText = (content: string) => {
-    const newText: SelectedText = {
-      id: Date.now().toString(),
-      content,
+    if (!content.trim()) return
+
+    const isDuplicate = selectedTexts.some(text => text.content === content)
+    if (!isDuplicate) {
+      const newText: SelectedText = {
+        id: Date.now().toString(),
+        content: content.trim(),
+      }
+      setSelectedTexts((prev) => [...prev, newText])
     }
-    setSelectedTexts((prev) => [...prev, newText])
   }
 
   const removeSelectedText = (id: string) => {
@@ -61,20 +66,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setSelectedTexts([])
   }
 
+  // 초기 상태에서도 selectedTexts가 항상 존재하도록 보장
+  const contextValue = {
+    messages,
+    selectedTexts: selectedTexts || [],
+    isLoading,
+    addMessage,
+    clearMessages,
+    setIsLoading,
+    addSelectedText,
+    removeSelectedText,
+    clearSelectedTexts,
+  }
+
   return (
-    <ChatContext.Provider
-      value={{
-        messages,
-        selectedTexts,
-        isLoading,
-        addMessage,
-        clearMessages,
-        setIsLoading,
-        addSelectedText,
-        removeSelectedText,
-        clearSelectedTexts,
-      }}
-    >
+    <ChatContext.Provider value={contextValue}>
       {children}
     </ChatContext.Provider>
   )
