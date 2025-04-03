@@ -6,6 +6,7 @@ import { useChat } from "@/contexts/ChatContext"
 import Editor, { Monaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
 import { cn } from "@/lib/utils"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export const NoteEditor = () => {
   const { selectedNote, updateNote } = useNotes()
@@ -138,10 +139,21 @@ export const NoteEditor = () => {
             <div className="flex-1 flex items-center ">
               <div className="bg-background border-t border-l border-r rounded-t-md px-6 flex items-center py-1 text-sm">
                 {title}
-                <div className={cn(
-              'h-3 w-3 rounded-full transition-all duration-200 ml-2',
-              hasChanges ? 'bg-green-600/80' : 'bg-muted'
-            )}/>
+                <div className="flex-1 flex items-center">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className={cn(
+                            'h-3.5 w-3.5 rounded-full transition-all duration-200 ml-2',
+                            hasChanges ? 'bg-green-600/80' : 'bg-muted'
+                          )}/>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{hasChanges ? '저장되지 않은 변경사항이 있습니다.' : '모든 변경사항이 저장되었습니다.'}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                </div>
               </div>
             </div>            
           </div>

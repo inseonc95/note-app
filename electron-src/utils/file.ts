@@ -1,7 +1,8 @@
 import fs from "fs"
 import { join } from "path"
+import { app } from "electron"
 
-const API_KEY_PATH = join(__dirname, "../api_key.json");
+const API_KEY_PATH = join(app.getPath('userData'), "api_key.json")
 
 export const loadApiKey = () => {
   try {
