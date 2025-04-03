@@ -9,6 +9,7 @@ interface NoteContextType {
   updateNote: (id: string, note: Partial<Note>) => void
   deleteNote: (id: string) => void
   selectNote: (id: string) => void
+  unSelectNote: () => void
 }
 
 const NoteContext = createContext<NoteContextType | null>(null)
@@ -73,6 +74,10 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  const unSelectNote = () => {
+    setSelectedNote(null)
+  }
+
   const updateNote = useCallback(async (id: string, updates: Partial<Note>) => {
     const currentNote = notes.find(note => note.id === id)
     if (!currentNote) return
@@ -103,6 +108,7 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
         deleteNote,
         selectNote,
         updateNote,
+        unSelectNote,
       }}
     >
       {children}

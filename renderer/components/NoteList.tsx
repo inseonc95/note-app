@@ -63,9 +63,11 @@ export function NoteList() {
                       <Trash2 className="size-4" />
                     </Button>
                   </TooltipTrigger>
+                  {selectedNote?.id === note.id &&
                   <TooltipContent>
-                    <p>노트 삭제</p>
+                      <p>노트 삭제</p>
                   </TooltipContent>
+                  }
                 </Tooltip>
               </TooltipProvider>
             </div>
