@@ -1,10 +1,15 @@
 import { ipcMain } from "electron";
-import { checkApiKey, saveApiKey } from "../utils/file";
+import { checkApiKey, saveApiKey, loadApiKey } from "../utils/file";
 import { OpenAIService } from "../service/chat";
 
 export const setupApiKeyHandlers = () => {
   ipcMain.handle("check-api-key", () => {
-    return checkApiKey();
+    const hasKey = checkApiKey();
+    if (hasKey) {
+      const openaiService = OpenAIService.getInstance();
+      openaiService.setApiKey(loadApiKey());
+    }
+    return hasKey;
   });
 
   ipcMain.handle("save-api-key", async (_event, apiKey: string) => {

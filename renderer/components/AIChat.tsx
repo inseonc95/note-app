@@ -58,7 +58,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
   useEffect(() => {
     const checkApiKey = async () => {
-      const hasKey = await window.electron.checkApiKey()
+      const hasKey = await window.chat.checkApiKey()
       setHasApiKey(hasKey)
     }
     checkApiKey()
@@ -76,7 +76,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
   const handleSave = async (apiKey: string) => {
     try {
-      const response = await window.electron.saveApiKey(apiKey);
+      const response = await window.chat.saveApiKey(apiKey);
       if (response) {
         alert("API 키 등록에 성공했습니다.");
         setHasApiKey(true);
@@ -126,7 +126,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
       // 선택된 텍스트들을 컨텍스트로 포함
       const contextTexts = selectedTexts.map(text => text.content).join("\n\n")
-      const response = await window.electron.sendMessage(
+      const response = await window.chat.sendMessage(
         apiMessages,
         contextTexts || null
       )
