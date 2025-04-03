@@ -1,20 +1,25 @@
 import { useNotes } from "@/contexts/NoteContext"
-import { useRef, useEffect, useState } from "react"
-import { AIChatRef } from "./AIChat"
+import { useRef, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Command, Send, X, Plus } from "lucide-react"
+import { Command } from "lucide-react"
 import { useChat } from "@/contexts/ChatContext"
+import Editor, { Monaco } from "@monaco-editor/react"
+import { editor } from "monaco-editor"
 
-
-export const Editor = () => {
+export const NoteEditor = () => {
   const { selectedNote, updateNote } = useNotes()
   const { addSelectedText } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
-  const editorRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [showButton, setShowButton] = useState(false)
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
   const [content, setContent] = useState(selectedNote?.content || "")
   const [title, setTitle] = useState(selectedNote?.title || "")
+
+  useEffect(() => {
+    setContent(selectedNote?.content || "")
+    setTitle(selectedNote?.title || "")
+  }, [selectedNote])
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value
@@ -27,86 +32,77 @@ export const Editor = () => {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newContent = e.target.value
-    setContent(newContent)
-    if (selectedNote) {
+  const handleEditorChange = (value: string | undefined) => {
+    if (selectedNote && value !== undefined) {
+      setContent(value)
       updateNote(selectedNote.id, {
         ...selectedNote,
-        content: newContent,
+        content: value,
       })
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-      e.preventDefault()
-      const editor = editorRef.current
-      if (!editor) return
+  const handleEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+    editorRef.current = editor
 
-      const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
+    // 선택 변경 이벤트 처리
+    editor.onDidChangeCursorSelection((e) => {
+      const selection = editor.getSelection()
+      if (!selection) return
+
+      const model = editor.getModel()
+      if (!model) return
+
+      const selectedText = model.getValueInRange(selection)
+      
+      if (selectedText.trim()) {
+        const position = editor.getPosition()
+        if (!position) return
+
+        const coords = editor.getScrolledVisiblePosition(position)
+        const editorElement = editor.getDomNode()
+        const rect = editorElement.getBoundingClientRect()
+        
+        setButtonPosition({
+          top: rect.top + coords.top + 20,
+          left: rect.left + coords.left,
+        })
+        setShowButton(true)
+      } else {
+        setShowButton(false)
+      }
+    })
+    // Command+K 단축키 처리
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
+      const selection = editor.getSelection()
+      if (!selection) return
+
+      const model = editor.getModel()
+      if (!model) return
+
+      const selectedText = model.getValueInRange(selection)
       if (selectedText.trim()) {
         addSelectedText(selectedText)
         setShowButton(false)
       }
-    }
-  }
-
-  const handleSelection = () => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
-    if (selectedText.trim()) {
-      const rect = editor.getBoundingClientRect()
-      const lineHeight = parseInt(window.getComputedStyle(editor).lineHeight)
-      const lines = selectedText.split("\n").length
-      const top = rect.top + (lineHeight * lines) + 5
-      const left = rect.left + 5
-
-      setButtonPosition({ top, left })
-      setShowButton(true)
-    } else {
-      setShowButton(false)
-    }
+    })
   }
 
   const handleAddToChat = () => {
-    const editor = editorRef.current
-    if (!editor) return
+    if (!editorRef.current) return
 
-    const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
+    const selection = editorRef.current.getSelection()
+    if (!selection) return
+
+    const model = editorRef.current.getModel()
+    if (!model) return
+
+    const selectedText = model.getValueInRange(selection)
     if (selectedText.trim()) {
       addSelectedText(selectedText)
       setShowButton(false)
     }
   }
-
-  useEffect(() => {
-    const editor = editorRef.current
-    if (!editor) return
-
-    const handleMouseUp = () => {
-      handleSelection()
-    }
-
-    const handleKeyUp = () => {
-      handleSelection()
-    }
-
-    editor.addEventListener("mouseup", handleMouseUp)
-    editor.addEventListener("keyup", handleKeyUp)
-
-    return () => {
-      editor.removeEventListener("mouseup", handleMouseUp)
-      editor.removeEventListener("keyup", handleKeyUp)
-    }
-  }, [])
-
-  useEffect(() => {
-    setContent(selectedNote?.content || "")
-    setTitle(selectedNote?.title || "")
-  }, [selectedNote])
 
   if (!selectedNote) {
     return (
@@ -127,38 +123,46 @@ export const Editor = () => {
             value={title}
             onChange={handleTitleChange}
           />
-          <textarea
-            ref={editorRef}
-            className="w-full h-[calc(100vh-12rem)] resize-none border-none bg-transparent focus:outline-none"
-            placeholder="내용을 입력하세요..."
-            value={content}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onSelect={handleSelection}
-          />
-          {showButton && (
-            <div
-              className="fixed z-50 bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-lg"
-              style={{
-                top: `${buttonPosition.top}px`,
-                left: `${buttonPosition.left}px`,
+          <div className="relative">
+            <Editor
+              height="calc(100vh - 12rem)"
+              defaultLanguage="markdown"
+              value={content}
+              onChange={handleEditorChange}
+              onMount={handleEditorMount}
+              options={{
+                minimap: { enabled: false },
+                lineNumbers: 'off',
+                scrollBeyondLastLine: false,
+                wordWrap: 'on',
+                fontSize: 14,
+                fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif',
+                renderWhitespace: 'none',
+                padding: { top: 16, bottom: 16 },
               }}
-            >
-              <Button
-                size="sm"
-                className="h-6 text-xs"
-                onClick={handleAddToChat}
+            />
+            {showButton && (
+              <div
+                className="fixed z-50 bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-lg"
+                style={{
+                  top: `${buttonPosition.top}px`,
+                  left: `${buttonPosition.left}px`,
+                }}
               >
-                <span
-                >Add to chat</span>
-                <div className="flex items-center text-gray-400">
-                  <Command className="size-3 ml-2" />
-                  <span className="font-mono">K</span>
-                  
-                </div>
-              </Button>
-            </div>
-          )}
+                <Button
+                  size="sm"
+                  className="h-6 text-xs"
+                  onClick={handleAddToChat}
+                >
+                  <span>Add to chat</span>
+                  <div className="flex items-center text-gray-400">
+                    <Command className="size-3 ml-2" />
+                    <span className="font-mono">K</span>
+                  </div>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

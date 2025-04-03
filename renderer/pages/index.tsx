@@ -1,7 +1,7 @@
 import { useRef } from "react";
 
 import { NoteList } from "@/components/NoteList";
-import { Editor } from "@/components/Editor";
+import { NoteEditor } from "@/components/Editor";
 import { AIChat, AIChatRef } from "@/components/AIChat";
 
 const IndexPage = () => {
@@ -12,7 +12,7 @@ const IndexPage = () => {
         <NoteList />
       </div>
       <div className="w-1/2 flex flex-col">
-        <Editor />
+        <NoteEditor />
       </div>
       <div className="w-1/4 border-l bg-accent flex flex-col">
         <AIChat ref={aiChatRef} />
