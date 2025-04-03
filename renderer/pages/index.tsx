@@ -12,7 +12,7 @@ const IndexPage = () => {
         <NoteList />
       </div>
       <div className="w-1/2 flex flex-col">
-        <Editor aiChatRef={aiChatRef} />
+        <Editor />
       </div>
       <div className="w-1/4 border-l bg-accent flex flex-col">
         <AIChat ref={aiChatRef} />

@@ -5,11 +5,8 @@ import { Button } from "@/components/ui/button"
 import { Command, Send, X, Plus } from "lucide-react"
 import { useChat } from "@/contexts/ChatContext"
 
-interface EditorProps {
-  aiChatRef: React.RefObject<AIChatRef>
-}
 
-export const Editor = ({ aiChatRef }: EditorProps) => {
+export const Editor = () => {
   const { selectedNote, updateNote } = useNotes()
   const { addSelectedText } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
@@ -47,6 +44,7 @@ export const Editor = ({ aiChatRef }: EditorProps) => {
       const selectedText = editor.value.substring(editor.selectionStart, editor.selectionEnd)
       if (selectedText.trim()) {
         addSelectedText(selectedText)
+        setShowButton(false)
       }
     }
   }
