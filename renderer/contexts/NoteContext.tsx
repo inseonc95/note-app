@@ -12,8 +12,6 @@ interface NoteContextType {
   notes: Note[]
   selectedNote: Note | null
   addNote: (title: string) => void
-  updateNoteContent: (id: string, content: string) => void
-  updateNoteTitle: (id: string, title: string) => void
   deleteNote: (id: string) => void
   selectNote: (id: string) => void
   updateNote: (id: string, note: Note) => void
@@ -45,36 +43,6 @@ export function NoteProvider({ children }: { children: ReactNode }) {
     setSelectedNote(newNote)
   }
 
-  const updateNoteContent = (id: string, content: string) => {
-    setNotes((prev) =>
-      prev.map((note) =>
-        note.id === id
-          ? { ...note, content, updatedAt: new Date() }
-          : note
-      )
-    )
-    if (selectedNote?.id === id) {
-      setSelectedNote((prev) =>
-        prev ? { ...prev, content, updatedAt: new Date() } : null
-      )
-    }
-  }
-
-  const updateNoteTitle = (id: string, title: string) => {
-    setNotes((prev) =>
-      prev.map((note) =>
-        note.id === id
-          ? { ...note, title, updatedAt: new Date() }
-          : note
-      )
-    )
-    if (selectedNote?.id === id) {
-      setSelectedNote((prev) =>
-        prev ? { ...prev, title, updatedAt: new Date() } : null
-      )
-    }
-  }
-
   const deleteNote = (id: string) => {
     setNotes((prev) => prev.filter((note) => note.id !== id))
     if (selectedNote?.id === id) {
@@ -102,8 +70,6 @@ export function NoteProvider({ children }: { children: ReactNode }) {
         notes,
         selectedNote,
         addNote,
-        updateNoteContent,
-        updateNoteTitle,
         deleteNote,
         selectNote,
         updateNote,
