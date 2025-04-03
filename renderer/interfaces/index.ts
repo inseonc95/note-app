@@ -4,7 +4,11 @@
 //
 // import User from 'path/to/interfaces';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ChatMessage } from "@/utils/chat";
+
+export interface ChatMessage {
+  role: "user" | "assistant" | "system"
+  content: string
+}
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
