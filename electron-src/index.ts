@@ -4,10 +4,11 @@ import { format } from "url";
 
 
 // Packages
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow, app, ipcMain } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 import { setupHandlers } from "./handler";
+import { NoteService } from './service/note'
 
 // Prepare the renderer once the app is ready
 app.on("ready", async () => {
@@ -40,4 +41,19 @@ app.on("ready", async () => {
 
 // Quit the app once all windows are closed
 app.on("window-all-closed", app.quit);
+
+const noteService = new NoteService()
+
+// Note 관련 IPC 핸들러 설정
+ipcMain.handle('load-notes', async () => {
+  return await noteService.loadNotes()
+})
+
+ipcMain.handle('save-note', async (_, note) => {
+  await noteService.saveNote(note)
+})
+
+ipcMain.handle('delete-note', async (_, id) => {
+  await noteService.deleteNote(id)
+})
 

@@ -9,7 +9,7 @@ export function NoteList() {
   const { notes, selectedNote, selectNote, deleteNote, addNote } = useNotes()
 
   const handleAddNote = () => {
-    addNote("New Note");
+    addNote();
   };
 
   return (
@@ -36,7 +36,7 @@ export function NoteList() {
               <div className="flex-1 truncate">
                 <div className="font-medium">{note.title}</div>
                 <div className="text-xs text-muted-foreground">
-                  {note.updatedAt.toLocaleDateString()}
+                  {new Date(note.updatedAt).toLocaleDateString()}
                 </div>
               </div>
               <Button

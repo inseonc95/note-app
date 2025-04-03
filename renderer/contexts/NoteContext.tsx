@@ -1,68 +1,98 @@
-import { createContext, useContext, useState, ReactNode } from "react"
-
-interface Note {
-  id: string
-  title: string
-  content: string
-  createdAt: Date
-  updatedAt: Date
-}
+import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { Note } from '@/interfaces/note'
+import { v4 as uuidv4 } from 'uuid'
 
 interface NoteContextType {
   notes: Note[]
   selectedNote: Note | null
-  addNote: (title: string) => void
+  addNote: () => void
+  updateNote: (id: string, note: Partial<Note>) => void
   deleteNote: (id: string) => void
   selectNote: (id: string) => void
-  updateNote: (id: string, note: Note) => void
 }
 
-const NoteContext = createContext<NoteContextType | undefined>(undefined)
+const NoteContext = createContext<NoteContextType | null>(null)
 
-export function NoteProvider({ children }: { children: ReactNode }) {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: "1",
-      title: "Welcome Note",
-      content: "Welcome to your new note-taking app!",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    },
-  ])
+export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
+  const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
+  const [hiddenNotes, setHiddenNotes] = useState<string[]>([])
 
-  const addNote = (title: string) => {
-    const newNote: Note = {
-      id: Date.now().toString(),
-      title,
-      content: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  useEffect(() => {
+    loadNotes()
+  }, [])
+
+  const loadNotes = async () => {
+    try {
+      const loadedNotes = await window.note.loadNotes()
+      setNotes(loadedNotes)
+      if (loadedNotes.length > 0 && !selectedNote) {
+        setSelectedNote(loadedNotes[0])
+      }
+    } catch (error) {
+      console.error('Failed to load notes:', error)
     }
-    setNotes((prev) => [...prev, newNote])
-    setSelectedNote(newNote)
   }
 
-  const deleteNote = (id: string) => {
-    setNotes((prev) => prev.filter((note) => note.id !== id))
-    if (selectedNote?.id === id) {
-      setSelectedNote(null)
+  const addNote = async () => {
+    const newNote: Note = {
+      id: uuidv4(),
+      title: 'Untitled',
+      content: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      await window.note.saveNote(newNote)
+      setNotes([...notes, newNote])
+      setSelectedNote(newNote)
+    } catch (error) {
+      console.error('Failed to add note:', error)
+    }
+  }
+
+
+  const deleteNote = async (id: string) => {
+    try {
+      await window.note.deleteNote(id)
+      const updatedNotes = notes.filter(note => note.id !== id)
+      setNotes(updatedNotes)
+      if (selectedNote?.id === id) {
+        setSelectedNote(updatedNotes[0] || null)
+      }
+    } catch (error) {
+      console.error('Failed to delete note:', error)
     }
   }
 
   const selectNote = (id: string) => {
-    const note = notes.find((note) => note.id === id)
-    setSelectedNote(note || null)
-  }
-
-  const updateNote = (id: string, updatedNote: Note) => {
-    setNotes((prev) =>
-      prev.map((note) => (note.id === id ? updatedNote : note))
-    )
-    if (selectedNote?.id === id) {
-      setSelectedNote(updatedNote)
+    const note = notes.find(note => note.id === id)
+    if (note) {
+      setSelectedNote(note)
     }
   }
+
+  const updateNote = useCallback(async (id: string, updates: Partial<Note>) => {
+    const currentNote = notes.find(note => note.id === id)
+    if (!currentNote) return
+
+    const updatedNote = {
+      ...currentNote,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      await window.note.saveNote(updatedNote)
+      setNotes(prev => prev.map(note => note.id === id ? updatedNote : note))
+      if (selectedNote?.id === id) {
+        setSelectedNote(prev => prev?.id === id ? updatedNote : prev)
+      }
+    } catch (error) {
+      console.error('Failed to update note:', error)
+    }
+  }, [notes, selectedNote])
 
   return (
     <NoteContext.Provider
@@ -80,10 +110,10 @@ export function NoteProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useNotes() {
+export const useNotes = () => {
   const context = useContext(NoteContext)
-  if (context === undefined) {
-    throw new Error("useNotes must be used within a NoteProvider")
+  if (!context) {
+    throw new Error('useNotes must be used within a NoteProvider')
   }
   return context
 } 

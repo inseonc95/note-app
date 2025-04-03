@@ -14,12 +14,15 @@ export const Editor = () => {
   const [showButton, setShowButton] = useState(false)
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
   const [content, setContent] = useState(selectedNote?.content || "")
+  const [title, setTitle] = useState(selectedNote?.title || "")
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newTitle = e.target.value
+    setTitle(newTitle)
     if (selectedNote) {
       updateNote(selectedNote.id, {
         ...selectedNote,
-        title: e.target.value,
+        title: newTitle,
       })
     }
   }
@@ -102,6 +105,7 @@ export const Editor = () => {
 
   useEffect(() => {
     setContent(selectedNote?.content || "")
+    setTitle(selectedNote?.title || "")
   }, [selectedNote])
 
   if (!selectedNote) {
@@ -120,7 +124,7 @@ export const Editor = () => {
             ref={titleRef}
             className="w-full resize-none border-none bg-transparent text-2xl font-bold focus:outline-none"
             placeholder="제목을 입력하세요..."
-            value={selectedNote?.title || ""}
+            value={title}
             onChange={handleTitleChange}
           />
           <textarea

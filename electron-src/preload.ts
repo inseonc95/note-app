@@ -2,6 +2,16 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { contextBridge, ipcRenderer } from "electron";
 import { ChatMessage } from "./utils/types";
+// 
+
+export interface Note {
+  id: string
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
 // We are using the context bridge to securely expose NodeAPIs.
 // Please note that many Node APIs grant access to local system resources.
 // Be very cautious about which globals and APIs you expose to untrusted remote content.
@@ -13,4 +23,11 @@ const api = {
   saveApiKey: (apiKey: string) => ipcRenderer.invoke("save-api-key", apiKey),
 }
 
+const note = {
+  loadNotes: () => ipcRenderer.invoke("load-notes"),
+  saveNote: (note: Note) => ipcRenderer.invoke("save-note", note),
+  deleteNote: (id: string) => ipcRenderer.invoke("delete-note", id),
+}
+
 contextBridge.exposeInMainWorld("chat", api);
+contextBridge.exposeInMainWorld("note", note);

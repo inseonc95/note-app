@@ -10,6 +10,14 @@ export interface ChatMessage {
   content: string
 }
 
+export interface Note {
+  id: string
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   interface Window {
@@ -18,6 +26,11 @@ declare global {
         noteContent?: string) => Promise<string>;
       checkApiKey: () => Promise<boolean>;
       saveApiKey: (apiKey: string) => Promise<boolean>;
+    };
+    note: {
+      loadNotes: () => Promise<Note[]>;
+      saveNote: (note: Note) => Promise<void>;
+      deleteNote: (id: string) => Promise<void>;
     };
   }
 }
