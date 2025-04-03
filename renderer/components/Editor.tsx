@@ -174,10 +174,16 @@ export const NoteEditor = () => {
             value={title}
             onChange={handleTitleChange}
           />
+          <p className="text-xs text-muted-foreground px-6">
+            생성 일시 {new Date(selectedNote.createdAt).toLocaleDateString() + " " + new Date(selectedNote.createdAt).toLocaleTimeString()}
+          </p>
+          <p className="text-xs text-muted-foreground px-6">
+            수정 일시 {new Date(selectedNote.updatedAt).toLocaleDateString() + " " + new Date(selectedNote.updatedAt).toLocaleTimeString()}
+          </p>
           </div>
           <div className="relative border-l border-r border-b">
             <Editor
-              height="calc(100vh - 9.9rem)"
+              height="calc(100vh - 12rem)"
               defaultLanguage="markdown"
               value={content}
               onChange={handleEditorChange}
