@@ -126,7 +126,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
       // 선택된 텍스트들을 컨텍스트로 포함
       const contextTexts = selectedTexts.map(text => text.content).join("\n\n")
-      const response = await window.electron.sayHello(
+      const response = await window.electron.sendMessage(
         apiMessages,
         contextTexts || null
       )

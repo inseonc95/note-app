@@ -9,7 +9,7 @@ declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   interface Window {
     electron: {
-      sayHello: (  messages: ChatMessage[],
+      sendMessage: (  messages: ChatMessage[],
         noteContent?: string) => Promise<string>;
       checkApiKey: () => Promise<boolean>;
       saveApiKey: (apiKey: string) => Promise<boolean>;
