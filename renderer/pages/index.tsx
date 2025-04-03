@@ -7,14 +7,14 @@ import { AIChat, AIChatRef } from "@/components/AIChat";
 const IndexPage = () => {
   const aiChatRef = useRef<AIChatRef>(null);
   return (
-    <div className="flex h-[calc(100vh-28px)]">
-      <div className="w-1/4 border-r bg-accent flex flex-col">        
+    <div className="flex h-[calc(100vh-28px)] bg-accent">
+      <div className="w-1/4  flex flex-col">        
         <NoteList />
       </div>
-      <div className="w-1/2 flex flex-col">
+      <div className="w-1/2 flex flex-col bg-background rounded-xl mb-4">
         <NoteEditor />
       </div>
-      <div className="w-1/4 border-l bg-accent flex flex-col">
+      <div className="w-1/4  flex flex-col">
         <AIChat ref={aiChatRef} />
       </div>
     </div>

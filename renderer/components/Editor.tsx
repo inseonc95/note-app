@@ -136,7 +136,7 @@ export const NoteEditor = () => {
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-hidden">
         <div className="p-4 relative ">
-          <div className="flex items-center gap-2 border-b ">
+          <div className="flex items-center gap-2 ">
             <div className="flex-1 flex items-center">
               <div className="bg-background border-t border-l border-r rounded-t-md pl-6 pr-1 flex items-center text-sm">
                 {title}
@@ -166,7 +166,10 @@ export const NoteEditor = () => {
               </div>
             </div>            
           </div>
-          <div className="relative border-l border-r pt-5">
+          <div
+          className="border rounded-r-md rounded-bl-md"
+          >
+          <div className="relative pt-5">
           <textarea
             ref={titleRef}
             className="w-full resize-none border-none bg-transparent text-2xl font-bold focus:outline-none h-8 px-6 "
@@ -181,9 +184,9 @@ export const NoteEditor = () => {
             수정 일시 {new Date(selectedNote.updatedAt).toLocaleDateString() + " " + new Date(selectedNote.updatedAt).toLocaleTimeString()}
           </p>
           </div>
-          <div className="relative border-l border-r border-b">
+          <div className="relative p-1">
             <Editor
-              height="calc(100vh - 12rem)"
+              height="calc(100vh - 13.3rem)"
               defaultLanguage="markdown"
               value={content}
               onChange={handleEditorChange}
@@ -222,6 +225,7 @@ export const NoteEditor = () => {
             )}
           </div>
         </div>
+      </div>
       </div>
     </div>
   )
