@@ -68,7 +68,7 @@ updatedAt: ${note.updatedAt}
         if (file.endsWith('.md')) {
           const content = await fs.readFile(path.join(this.notesDir, file), 'utf-8')
           const metadata = this.parseFrontMatter(content)
-          const noteContent = content.split('---')[2]?.trim() || ''
+          const noteContent = content.split('---').slice(2).join('---').trim()
 
           notes.push({
             id: path.basename(file, '.md'),
