@@ -5,19 +5,7 @@
 // import User from 'path/to/interfaces';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
-export interface ChatMessage {
-  role: "user" | "assistant" | "system"
-  content: string
-}
-
-export interface Note {
-  id: string
-  title: string
-  content: string
-  createdAt: string
-  updatedAt: string
-}
-
+import { ChatMessage, Note } from '@/lib/types'
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   interface Window {

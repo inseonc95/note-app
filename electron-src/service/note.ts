@@ -1,15 +1,8 @@
 import { app } from 'electron'
 import { promises as fs } from 'fs'
 import path from 'path'
-// import { Note } from '../../renderer/interfaces/note'
 
-export interface Note {
-  id: string
-  title: string
-  content: string
-  createdAt: string
-  updatedAt: string
-}
+import { Note } from '../lib/types'
 
 export class NoteService {
   private notesDir: string

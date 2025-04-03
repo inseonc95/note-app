@@ -1,13 +1,13 @@
 import { createContext, useContext, useState, ReactNode } from "react"
 
-export interface Message {
+interface Message {
   id: string
   role: "user" | "assistant"
   content: string
   timestamp: Date
 }
 
-export interface SelectedText {
+interface SelectedText {
   id: string
   content: string
 }

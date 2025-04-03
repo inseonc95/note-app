@@ -1,3 +1,9 @@
+export interface ChatMessage {
+  role: "user" | "assistant" | "system"
+  content: string
+}
+
+
 export interface Note {
   id: string
   title: string

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { Note } from '@/interfaces/note'
+import { Note } from '@/lib/types'
 import { v4 as uuidv4 } from 'uuid'
 
 interface NoteContextType {

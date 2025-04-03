@@ -1,5 +1,5 @@
 import OpenAI from "openai"
-import { ChatMessage } from "../utils/types"
+import { ChatMessage } from "../lib/types"
 
 
 

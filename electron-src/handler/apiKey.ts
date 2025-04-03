@@ -1,5 +1,5 @@
 import { ipcMain } from "electron";
-import { checkApiKey, saveApiKey, loadApiKey } from "../utils/file";
+import { checkApiKey, saveApiKey, loadApiKey } from "../lib/file";
 import { OpenAIService } from "../service/chat";
 
 export const setupApiKeyHandlers = () => {
