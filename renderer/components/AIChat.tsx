@@ -252,8 +252,8 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
               </div>
             </ScrollArea>
           </div>
-          <div className="border-t">
-            <div className="p-2">
+          <div>
+            <div className="px-2 py-5">
               <div className="flex flex-wrap gap-1 mb-2">
                 {selectedTexts.map((text) => (
                   <TooltipProvider key={text.id}>
@@ -293,7 +293,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <textarea
                   ref={inputRef}
-                  className="flex-1 resize-none rounded-md border p-2 text-sm bg-background"
+                  className="flex-1 resize-none rounded-md border p-2 text-sm bg-background h-10"
                   placeholder={hasApiKey ? "메시지를 입력하세요..." : "API 키를 등록해주세요"}
                   rows={1}
                   disabled={isLoading || !hasApiKey}

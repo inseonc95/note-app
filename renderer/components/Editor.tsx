@@ -137,7 +137,7 @@ export const NoteEditor = () => {
       <div className="flex-1 overflow-hidden">
         <div className="p-4 relative ">
           <div className="flex items-center gap-2 border-b ">
-            <div className="flex-1 flex items-center ">
+            <div className="flex-1 flex items-center">
               <div className="bg-background border-t border-l border-r rounded-t-md pl-6 pr-1 flex items-center text-sm">
                 {title}
                 <div className="flex-1 flex items-center">
@@ -177,7 +177,7 @@ export const NoteEditor = () => {
           </div>
           <div className="relative border-l border-r border-b">
             <Editor
-              height="calc(100vh - 12rem)"
+              height="calc(100vh - 9.9rem)"
               defaultLanguage="markdown"
               value={content}
               onChange={handleEditorChange}
