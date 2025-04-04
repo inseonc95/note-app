@@ -79,7 +79,7 @@ export const NoteEditor = () => {
   }, [setEditorRef])
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const newTitle = e.target.value
+    const newTitle = e.target.value.trim()
     setTitle(newTitle)
     setHasChanges(true)
   }
@@ -216,14 +216,17 @@ export const NoteEditor = () => {
           className="border rounded-r-md rounded-bl-md"
           >
           <div className="relative pt-5">
-          <textarea
-            ref={titleRef}
-            className="w-full resize-none border-none bg-transparent text-xl font-bold focus:outline-none h-8 px-6 "
-            placeholder="제목을 입력하세요..."
-            value={title ? title : selectedNote.filename}
-            onChange={handleTitleChange}
-            readOnly={title ? false : true}
-          />
+            {selectedNote?.title != "" && (
+                        <textarea
+                        ref={titleRef}
+                        className="w-full resize-none border-none bg-transparent text-xl font-bold focus:outline-none h-8 px-6 "
+                        placeholder="제목을 입력하세요. 빈 제목 저장 시 재설정이 불가능합니다."
+                        value={title}
+                        onChange={handleTitleChange}
+                        // readOnly={title ? false : true}
+                      />
+            )}
+
           <p className="text-xs text-muted-foreground px-6">
             파일 이름: {selectedNote.filename}.md
           </p>
