@@ -22,5 +22,10 @@ const note = {
   resetNotesDir: () => ipcRenderer.invoke("reset-notes-dir")
 }
 
+const electron = {
+  updateHasChanges: (hasChanges: boolean) => ipcRenderer.send("update-has-changes", hasChanges)
+}
+
 contextBridge.exposeInMainWorld("chat", chat);
 contextBridge.exposeInMainWorld("note", note);
+contextBridge.exposeInMainWorld("electron", electron);

@@ -10,6 +10,8 @@ interface NoteContextType {
   deleteNote: (id: string) => void
   selectNote: (id: string) => void
   unSelectNote: () => void
+  hasChanges: boolean
+  setHasChanges: (hasChanges: boolean) => void
 }
 
 const NoteContext = createContext<NoteContextType | null>(null)
@@ -17,7 +19,12 @@ const NoteContext = createContext<NoteContextType | null>(null)
 export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
   const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
-  const [hiddenNotes, setHiddenNotes] = useState<string[]>([])
+  const [hasChanges, setHasChanges] = useState(false)
+
+
+  useEffect(() => {
+    window.electron.updateHasChanges(hasChanges)
+  }, [hasChanges])
 
   useEffect(() => {
     loadNotes()
@@ -73,6 +80,7 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
     const note = notes.find(note => note.id === id)
     if (note) {
       setSelectedNote(note)
+      setHasChanges(false)
     }
   }
 
@@ -111,6 +119,8 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
         selectNote,
         updateNote,
         unSelectNote,
+        hasChanges,
+        setHasChanges,
       }}
     >
       {children}

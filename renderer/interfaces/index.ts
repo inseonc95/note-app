@@ -23,6 +23,9 @@ declare global {
       setNotesDir: () => Promise<string>;
       resetNotesDir: () => Promise<string>;
     };
+    electron: {
+      updateHasChanges: (hasChanges: boolean) => void;
+    };
   }
 }
 

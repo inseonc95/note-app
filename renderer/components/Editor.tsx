@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 
 export const NoteEditor = () => {
-  const { selectedNote, updateNote, unSelectNote } = useNotes()
+  const { selectedNote, updateNote, unSelectNote, hasChanges, setHasChanges } = useNotes()
   const { addSelectedText, setEditorRef } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -18,12 +18,11 @@ export const NoteEditor = () => {
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
   const [content, setContent] = useState(selectedNote?.content || "")
   const [title, setTitle] = useState(selectedNote?.title || "")
-  const [hasChanges, setHasChanges] = useState(false)
 
+  
   useEffect(() => {
     setContent(selectedNote?.content || "")
     setTitle(selectedNote?.title || "")
-    setHasChanges(false)
   }, [selectedNote])
 
   useEffect(() => {
