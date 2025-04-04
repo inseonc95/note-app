@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function NoteList() {
-  const { notes, selectedNote, selectNote, deleteNote, addNote } = useNotes()
+  const { notes, selectedNote, selectNote, deleteNote, addNote, hasChanges } = useNotes()
   const [notesDir, setNotesDir] = useState<string>("")
 
   useEffect(() => {
@@ -25,10 +25,19 @@ export function NoteList() {
   }, [])
 
   const handleAddNote = () => {
+    if (hasChanges) {
+      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
+      if (!response) return
+    }
     addNote()
+    
   }
 
   const handleChangeNotesDir = async () => {
+    if (hasChanges) {
+      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
+      if (!response) return
+    }
     const newDir = await window.note.setNotesDir()
     if (newDir) {
       setNotesDir(newDir)
@@ -38,6 +47,10 @@ export function NoteList() {
   }
 
   const handleResetNotesDir = async () => {
+    if (hasChanges) {
+      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
+      if (!response) return
+    }
     const defaultDir = await window.note.resetNotesDir()
     if (defaultDir) {
       setNotesDir(defaultDir)
@@ -129,7 +142,13 @@ export function NoteList() {
                 "group flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-background hover:text-accent-foreground",
                 selectedNote?.id === note.id && "bg-background text-accent-foreground"
               )}
-              onClick={() => selectNote(note.id)}
+              onClick={() => {
+                if (hasChanges) {
+                  const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
+                  if (!response) return
+                }
+                selectNote(note.id)
+              }}
             >
               <FileText className="size-4 shrink-0" />
               <div className="flex-1 truncate">
@@ -147,6 +166,10 @@ export function NoteList() {
                       className="size-8 opacity-0 group-hover:opacity-100"
                       onClick={(e) => {
                         e.stopPropagation()
+                        if (hasChanges) {
+                          const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
+                          if (!response) return
+                        }
                         deleteNote(note.id)
                       }}
                     >

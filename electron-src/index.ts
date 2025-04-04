@@ -4,13 +4,14 @@ import { format } from "url";
 
 
 // Packages
-import { BrowserWindow, app, ipcMain } from "electron";
+import { BrowserWindow, app, ipcMain, dialog } from "electron";
 import isDev from "electron-is-dev";
 import prepareNext from "electron-next";
 import { setupHandlers } from "./handler";
 
 // Prepare the renderer once the app is ready
 let mainWindow: BrowserWindow | null = null;
+let hasUnsavedChanges = false;
 
 app.on("ready", async () => {
   await prepareNext("./renderer");
@@ -39,7 +40,31 @@ app.on("ready", async () => {
       });
 
   mainWindow.loadURL(url);
+
+  mainWindow.on('close', async (event) => {
+    event.preventDefault();
+
+
+    mainWindow?.webContents.send('check-unsaved-changes');
+
+    if (hasUnsavedChanges) {
+      const { response } = await dialog.showMessageBox(mainWindow!, {
+        type: 'warning',
+        title: '저장되지 않은 변경사항',
+      message: '저장되지 않은 변경사항이 있습니다. 정말 종료하시겠습니까?',
+      buttons: ['취소', '종료'],
+      defaultId: 0,
+    })
+    if (response === 1) {
+        mainWindow?.destroy()
+      }
+    } else {
+      mainWindow?.destroy()
+    }
+  })
 });
+
+
 
 // Quit the app once all windows are closed
 app.on("window-all-closed", app.quit);
@@ -49,5 +74,6 @@ ipcMain.on('update-has-changes', (_, hasChanges: boolean) => {
   // macOS에서만 title bar 버튼 스타일 변경
   if (process.platform === 'darwin' && mainWindow) {
     console.log('hasChanges', hasChanges)
+    hasUnsavedChanges = hasChanges;
   }
 })

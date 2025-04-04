@@ -43,6 +43,7 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const addNote = async () => {
+    setHasChanges(false)
     const nodeId = uuidv4()
     const newNote: Note = {
       id: nodeId,
@@ -79,8 +80,8 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
   const selectNote = (id: string) => {
     const note = notes.find(note => note.id === id)
     if (note) {
-      setSelectedNote(note)
       setHasChanges(false)
+      setSelectedNote(note)
     }
   }
 
