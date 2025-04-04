@@ -1,5 +1,5 @@
 import { NoteService } from '../service/note'
-import { ipcMain } from 'electron'
+import { ipcMain, dialog } from 'electron'
 
 export const setupNotesHandlers = () => {
   const noteService = new NoteService()
@@ -15,5 +15,24 @@ export const setupNotesHandlers = () => {
 
   ipcMain.handle('delete-note', async (_, id) => {
     await noteService.deleteNote(id)
+  })
+
+  ipcMain.handle('get-notes-dir', async () => {
+    return noteService.getNotesDir()
+  })
+
+  ipcMain.handle('set-notes-dir', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (!result.canceled && result.filePaths.length > 0) {
+      await noteService.setNotesDir(result.filePaths[0])
+      return result.filePaths[0]
+    }
+    return null
+  })
+
+  ipcMain.handle('reset-notes-dir', async () => {
+    return await noteService.resetNotesDir()
   })
 }

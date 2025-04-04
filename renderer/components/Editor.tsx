@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 
 export const NoteEditor = () => {
-  const { selectedNote, updateNote, addNote, unSelectNote } = useNotes()
+  const { selectedNote, updateNote, unSelectNote } = useNotes()
   const { addSelectedText } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
@@ -139,7 +139,7 @@ export const NoteEditor = () => {
           <div className="flex items-center gap-2 ">
             <div className="flex-1 flex items-center">
               <div className="bg-background border-t border-l border-r rounded-t-md pl-6 pr-1 flex items-center text-xs h-8">
-                {title}
+                {title ? title : selectedNote.filename}
                 <div className="flex-1 flex items-center">
                   <TooltipProvider>
                     <Tooltip>
@@ -174,9 +174,13 @@ export const NoteEditor = () => {
             ref={titleRef}
             className="w-full resize-none border-none bg-transparent text-2xl font-bold focus:outline-none h-8 px-6 "
             placeholder="제목을 입력하세요..."
-            value={title}
+            value={title ? title : selectedNote.filename}
             onChange={handleTitleChange}
+            readOnly={title ? false : true}
           />
+          <p className="text-xs text-muted-foreground px-6">
+            파일 이름: {selectedNote.filename}.md
+          </p>
           <p className="text-xs text-muted-foreground px-6">
             생성 일시 {new Date(selectedNote.createdAt).toLocaleDateString() + " " + new Date(selectedNote.createdAt).toLocaleTimeString()}
           </p>

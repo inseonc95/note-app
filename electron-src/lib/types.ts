@@ -7,6 +7,7 @@ export interface ChatMessage {
 export interface Note {
   id: string
   title: string
+  filename?: string
   content: string
   createdAt: string
   updatedAt: string

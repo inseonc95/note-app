@@ -36,8 +36,10 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   const addNote = async () => {
+    const nodeId = uuidv4()
     const newNote: Note = {
-      id: uuidv4(),
+      id: nodeId,
+      filename: `${nodeId}`,
       title: 'Untitled',
       content: '',
       createdAt: new Date().toISOString(),

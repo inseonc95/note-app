@@ -1,16 +1,51 @@
-import { app } from 'electron'
+import { app, shell } from 'electron'
 import { promises as fs } from 'fs'
 import path from 'path'
 
 import { Note } from '../lib/types'
 
 export class NoteService {
-  private notesDir: string
+  private notesDir: string = ''
+  private configPath: string
 
   constructor() {
-    this.notesDir = path.join(app.getPath('userData'), 'notes')
-    console.log('Notes directory:', this.notesDir)
-    this.ensureNotesDirectory()
+    this.configPath = path.join(app.getPath('userData'), 'config.json')
+    this.loadConfig().then(config => {
+      this.notesDir = config?.notesDir || path.join(app.getPath('userData'), 'notes')
+      console.log('Notes directory:', this.notesDir)
+      this.ensureNotesDirectory()
+    })
+  }
+
+  private async loadConfig() {
+    try {
+      const config = await fs.readFile(this.configPath, 'utf-8')
+      return JSON.parse(config)
+    } catch (error) {
+      return null
+    }
+  }
+
+  private async saveConfig(config: any) {
+    await fs.writeFile(this.configPath, JSON.stringify(config, null, 2), 'utf-8')
+  }
+
+  async setNotesDir(newDir: string) {
+    this.notesDir = newDir
+    await this.saveConfig({ notesDir: newDir })
+    await this.ensureNotesDirectory()
+  }
+
+  async resetNotesDir() {
+    const defaultDir = path.join(app.getPath('userData'), 'notes')
+    this.notesDir = defaultDir
+    await this.saveConfig({ notesDir: defaultDir })
+    await this.ensureNotesDirectory()
+    return defaultDir
+  }
+
+  getNotesDir() {
+    return this.notesDir
   }
 
   private async ensureNotesDirectory() {
@@ -25,9 +60,15 @@ export class NoteService {
     return path.join(this.notesDir, `${id}.md`)
   }
 
-  private parseFrontMatter(content: string): { [key: string]: string } {
+  private parseFrontMatter(content: string, filename: string): { [key: string]: string } {
     const frontMatterMatch = content.match(/^---\n([\s\S]*?)\n---/)
-    if (!frontMatterMatch) return {}
+    if (!frontMatterMatch) {
+      return {
+        title: '',
+        filename: path.basename(filename, '.md'),
+        content: content
+      }
+    }
 
     const frontMatter = frontMatterMatch[1]
     const metadata: { [key: string]: string } = {}
@@ -60,12 +101,13 @@ updatedAt: ${note.updatedAt}
       for (const file of files) {
         if (file.endsWith('.md')) {
           const content = await fs.readFile(path.join(this.notesDir, file), 'utf-8')
-          const metadata = this.parseFrontMatter(content)
-          const noteContent = content.split('---').slice(2).join('---').trim()
+          const metadata = this.parseFrontMatter(content, file)
+          const noteContent = metadata.content || content.split('---').slice(2).join('---').trim()
 
           notes.push({
             id: path.basename(file, '.md'),
-            title: metadata.title || 'Untitled',
+            title: metadata.title || '',
+            filename: metadata.filename || path.basename(file, '.md'),
             content: noteContent,
             createdAt: metadata.createdAt || new Date().toISOString(),
             updatedAt: metadata.updatedAt || new Date().toISOString(),
@@ -93,12 +135,12 @@ updatedAt: ${note.updatedAt}
     }
   }
 
-  async deleteNote(id: string): Promise<void> {
+  async deleteNote(id: string) {
+    const filePath = path.join(this.notesDir, `${id}.md`)
     try {
-      const filePath = this.getNotePath(id)
-      await fs.unlink(filePath)
+      await shell.trashItem(filePath)
     } catch (error) {
-      console.error('Failed to delete note:', error)
+      console.error('Failed to move note to trash:', error)
       throw error
     }
   }

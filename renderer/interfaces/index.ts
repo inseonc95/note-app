@@ -19,6 +19,9 @@ declare global {
       loadNotes: () => Promise<Note[]>;
       saveNote: (note: Note) => Promise<void>;
       deleteNote: (id: string) => Promise<void>;
+      getNotesDir: () => Promise<string>;
+      setNotesDir: () => Promise<string>;
+      resetNotesDir: () => Promise<string>;
     };
   }
 }

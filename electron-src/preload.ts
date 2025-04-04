@@ -17,6 +17,9 @@ const note = {
   loadNotes: () => ipcRenderer.invoke("load-notes"),
   saveNote: (note: Note) => ipcRenderer.invoke("save-note", note),
   deleteNote: (id: string) => ipcRenderer.invoke("delete-note", id),
+  getNotesDir: () => ipcRenderer.invoke("get-notes-dir"),
+  setNotesDir: () => ipcRenderer.invoke("set-notes-dir"),
+  resetNotesDir: () => ipcRenderer.invoke("reset-notes-dir")
 }
 
 contextBridge.exposeInMainWorld("chat", chat);
