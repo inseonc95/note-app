@@ -28,7 +28,8 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     selectedTexts,
     removeSelectedText,
     clearSelectedTexts,
-    chatInputRef
+    chatInputRef,
+    applyToEditor
   } = useChat()
   const { selectedNote, updateNote } = useNotes()
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -95,15 +96,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     if (!selectedNote) return
     
     try {
-      // 기존 내용과 AI 응답을 구분하여 추가
-      const newContent = selectedNote.content
-        ? `${selectedNote.content}\n\n---\n\n${content}`
-        : content
-
-      await updateNote(selectedNote.id, {
-        ...selectedNote,
-        content: newContent
-      })
+      applyToEditor(content)
       setAppliedId(messageId)
       setTimeout(() => setAppliedId(null), 2000)
     } catch (err) {

@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export const NoteEditor = () => {
   const { selectedNote, updateNote, unSelectNote } = useNotes()
-  const { addSelectedText } = useChat()
+  const { addSelectedText, setEditorRef } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [showButton, setShowButton] = useState(false)
@@ -37,6 +37,47 @@ export const NoteEditor = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [hasChanges, title, content, selectedNote])
+
+  useEffect(() => {
+    setEditorRef({
+      handleApply: (content: string) => {
+        if (!editorRef.current) return
+        const selection = editorRef.current.getSelection()
+        if (selection) {
+          const model = editorRef.current.getModel()
+          if (model) {
+            model.applyEdits([{
+              range: {
+                startLineNumber: selection.endLineNumber,
+                startColumn: selection.endColumn,
+                endLineNumber: selection.endLineNumber,
+                endColumn: selection.endColumn
+              },
+              text: `\n${content}\n`
+            }])
+          }
+        } else {
+          // 선택된 텍스트가 없는 경우, 현재 커서 위치에 삽입
+          const currentPosition = editorRef.current.getPosition()
+          if (currentPosition) {
+            const model = editorRef.current.getModel()
+            if (model) {
+              model.applyEdits([{
+                range: {
+                  startLineNumber: currentPosition.lineNumber,
+                  startColumn: currentPosition.column,
+                  endLineNumber: currentPosition.lineNumber,
+                  endColumn: currentPosition.column
+                },
+                text: `\n${content}\n`
+              }])
+            }
+          }
+        }
+      }
+    })
+    return () => setEditorRef(null)
+  }, [setEditorRef])
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newTitle = e.target.value

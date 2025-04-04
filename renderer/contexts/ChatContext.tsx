@@ -24,15 +24,18 @@ interface ChatContextType {
   clearSelectedTexts: () => void
   focusChatInput: () => void
   chatInputRef: React.RefObject<HTMLTextAreaElement>
+  setEditorRef: (ref: { handleApply: (content: string) => void } | null) => void
+  applyToEditor: (content: string) => void
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
-  const [selectedTexts, setSelectedTexts] = useState<SelectedText[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [selectedTexts, setSelectedTexts] = useState<SelectedText[]>([])
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
+  const editorRef = useRef<{ handleApply: (content: string) => void } | null>(null)
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     const newMessage: Message = {
@@ -71,28 +74,35 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }
 
   const focusChatInput = () => {
-    if (chatInputRef.current) {
-      chatInputRef.current.focus()
-    }
+    chatInputRef.current?.focus()
   }
 
-  // 초기 상태에서도 selectedTexts가 항상 존재하도록 보장
-  const contextValue = {
-    messages,
-    selectedTexts: selectedTexts || [],
-    isLoading,
-    addMessage,
-    clearMessages,
-    setIsLoading,
-    addSelectedText,
-    removeSelectedText,
-    clearSelectedTexts,
-    focusChatInput,
-    chatInputRef,
+  const setEditorRef = (ref: { handleApply: (content: string) => void } | null) => {
+    editorRef.current = ref
+  }
+
+  const applyToEditor = (content: string) => {
+    editorRef.current?.handleApply(content)
   }
 
   return (
-    <ChatContext.Provider value={contextValue}>
+    <ChatContext.Provider
+      value={{
+        messages,
+        addMessage,
+        clearMessages,
+        isLoading,
+        setIsLoading,
+        selectedTexts,
+        addSelectedText,
+        removeSelectedText,
+        clearSelectedTexts,
+        chatInputRef,
+        focusChatInput,
+        setEditorRef,
+        applyToEditor
+      }}
+    >
       {children}
     </ChatContext.Provider>
   )
