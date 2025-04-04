@@ -27,10 +27,10 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     setIsLoading,
     selectedTexts,
     removeSelectedText,
-    clearSelectedTexts
+    clearSelectedTexts,
+    chatInputRef
   } = useChat()
   const { selectedNote, updateNote } = useNotes()
-  const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [appliedId, setAppliedId] = useState<string | null>(null)
@@ -38,11 +38,11 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
   useImperativeHandle(ref, () => ({
     focus: () => {
-      inputRef.current?.focus()
+      chatInputRef.current?.focus()
     },
     setInputValue: (value: string) => {
-      if (inputRef.current) {
-        inputRef.current.value = value
+      if (chatInputRef.current) {
+        chatInputRef.current.value = value
       }
     }
   }))
@@ -55,6 +55,11 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     scrollToBottom()
   }, [messages])
 
+  useEffect(() => {
+    if (!isLoading) {
+      chatInputRef.current?.focus()
+    }
+  }, [isLoading])
 
   useEffect(() => {
     const checkApiKey = async () => {
@@ -108,10 +113,10 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!inputRef.current?.value.trim() || isLoading) return
+    if (!chatInputRef.current?.value.trim() || isLoading) return
 
-    const userMessage = inputRef.current.value.trim()
-    inputRef.current.value = ""
+    const userMessage = chatInputRef.current.value.trim()
+    chatInputRef.current.value = ""
     addMessage("user", userMessage)
     setIsLoading(true)
     try {
@@ -292,7 +297,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
               </div>
               <form onSubmit={handleSubmit} className="flex gap-2">
                 <textarea
-                  ref={inputRef}
+                  ref={chatInputRef}
                   className="flex-1 resize-none rounded-md border p-2 text-sm bg-background h-10"
                   placeholder={hasApiKey ? "메시지를 입력하세요..." : "API 키를 등록해주세요"}
                   rows={1}

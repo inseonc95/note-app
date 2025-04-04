@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react"
+import { createContext, useContext, useState, useRef, ReactNode } from "react"
 
 interface Message {
   id: string
@@ -22,6 +22,8 @@ interface ChatContextType {
   addSelectedText: (content: string) => void
   removeSelectedText: (id: string) => void
   clearSelectedTexts: () => void
+  focusChatInput: () => void
+  chatInputRef: React.RefObject<HTMLTextAreaElement>
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -30,6 +32,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [selectedTexts, setSelectedTexts] = useState<SelectedText[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const chatInputRef = useRef<HTMLTextAreaElement>(null)
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     const newMessage: Message = {
@@ -55,6 +58,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         content: content.trim(),
       }
       setSelectedTexts((prev) => [...prev, newText])
+      focusChatInput()
     }
   }
 
@@ -64,6 +68,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const clearSelectedTexts = () => {
     setSelectedTexts([])
+  }
+
+  const focusChatInput = () => {
+    if (chatInputRef.current) {
+      chatInputRef.current.focus()
+    }
   }
 
   // 초기 상태에서도 selectedTexts가 항상 존재하도록 보장
@@ -77,6 +87,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     addSelectedText,
     removeSelectedText,
     clearSelectedTexts,
+    focusChatInput,
+    chatInputRef,
   }
 
   return (
