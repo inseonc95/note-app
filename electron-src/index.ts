@@ -23,6 +23,7 @@ app.on("ready", async () => {
       contextIsolation: true,
       preload: join(__dirname, "preload.js"),
     },
+    icon: join(__dirname, "../assets/png/appicon.png"),
   });
 
   // setupHandlers();

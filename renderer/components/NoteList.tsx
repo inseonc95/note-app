@@ -48,8 +48,9 @@ export function NoteList() {
 
   return (
     <>
-    <div className="flex h-14 items-center border-b px-4">
-      <h2 className="text-lg font-semibold">Notes</h2>
+    <div className="flex h-8 items-center border-b px-4 mt-2">
+      <h2 className="text-sm font-semibold">Notes</h2>
+
       <div className="ml-auto flex gap-2">
         {/* 데스크톱 버튼들 */}
         <div className="hidden md:flex gap-1">

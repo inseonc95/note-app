@@ -172,7 +172,7 @@ export const NoteEditor = () => {
           <div className="relative pt-5">
           <textarea
             ref={titleRef}
-            className="w-full resize-none border-none bg-transparent text-2xl font-bold focus:outline-none h-8 px-6 "
+            className="w-full resize-none border-none bg-transparent text-xl font-bold focus:outline-none h-8 px-6 "
             placeholder="제목을 입력하세요..."
             value={title ? title : selectedNote.filename}
             onChange={handleTitleChange}

@@ -57,7 +57,17 @@
     "asar": true,
     "files": [
       "main",
-      "renderer/out"
-    ]
+      "renderer/out",
+      "assets/png/appicon.png"
+    ],
+    "mac": {
+      "icon": "assets/png/appicon.png"
+    },
+    "win": {
+      "icon": "assets/png/appicon.png"
+    },
+    "linux": {
+      "icon": "assets/png/appicon.png"
+    }
   }
 }
