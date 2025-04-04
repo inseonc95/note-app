@@ -11,7 +11,7 @@ const IndexPage = () => {
       <div className="w-1/4  flex flex-col">        
         <NoteList />
       </div>
-      <div className="w-1/2 flex flex-col bg-background rounded-xl mb-4">
+      <div className="w-1/2 flex flex-col bg-background rounded-t-xl">
         <NoteEditor />
       </div>
       <div className="w-1/4  flex flex-col">

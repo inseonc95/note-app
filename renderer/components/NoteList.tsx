@@ -14,8 +14,8 @@ export function NoteList() {
 
   return (
     <>
-    <div className="flex h-14 items-center border-b px-4">
-      <h2 className="text-lg font-semibold">Notes</h2>
+    <div className="flex h-8 items-center border-b px-4 mt-2">
+      <h2 className="text-sm font-semibold">Notes</h2>
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -36,15 +36,15 @@ export function NoteList() {
             <div
               key={note.id}
               className={cn(
-                "group flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-background hover:text-accent-foreground",
+                "group flex items-center gap-2 rounded-md px-3 py-1 text-sm hover:bg-background hover:text-accent-foreground",
                 selectedNote?.id === note.id && "bg-background text-accent-foreground"
               )}
               onClick={() => selectNote(note.id)}
             >
               <FileText className="size-4 shrink-0" />
               <div className="flex-1 truncate">
-                <div className="font-medium">{note.title}</div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs font-medium">{note.title}</div>
+                <div className="text-[9px] text-muted-foreground">
                   {new Date(note.updatedAt).toLocaleDateString()}
                 </div>
               </div>
@@ -54,7 +54,7 @@ export function NoteList() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8 opacity-0 group-hover:opacity-100"
+                      className="size-2 opacity-0 group-hover:opacity-100"
                       onClick={(e) => {
                         e.stopPropagation()
                         deleteNote(note.id)

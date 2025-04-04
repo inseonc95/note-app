@@ -144,8 +144,8 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
 
   return (
     <>
-      <div className="flex h-14 items-center border-b px-4">
-        <h2 className="text-lg font-semibold cursor-help">AI Assistant</h2>
+      <div className="flex h-8 items-center border-b px-4 mt-2">
+        <h2 className="text-sm font-semibold cursor-help">AI Assistant</h2>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -253,7 +253,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
             </ScrollArea>
           </div>
           <div>
-            <div className="px-2 py-5">
+            <div className="px-2 py-2">
               <div className="flex flex-wrap gap-1 mb-2">
                 {selectedTexts.map((text) => (
                   <TooltipProvider key={text.id}>

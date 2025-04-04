@@ -135,10 +135,10 @@ export const NoteEditor = () => {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-hidden">
-        <div className="p-4 relative ">
+        <div className="p-2 relative ">
           <div className="flex items-center gap-2 ">
             <div className="flex-1 flex items-center">
-              <div className="bg-background border-t border-l border-r rounded-t-md pl-6 pr-1 flex items-center text-sm">
+              <div className="bg-background border-t border-l border-r rounded-t-md pl-6 pr-1 flex items-center text-xs h-8">
                 {title}
                 <div className="flex-1 flex items-center">
                   <TooltipProvider>
@@ -186,7 +186,7 @@ export const NoteEditor = () => {
           </div>
           <div className="relative p-1">
             <Editor
-              height="calc(100vh - 13.3rem)"
+              height="calc(100vh - 11rem)"
               defaultLanguage="markdown"
               value={content}
               onChange={handleEditorChange}
