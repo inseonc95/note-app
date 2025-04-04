@@ -19,9 +19,6 @@
     "target": "esnext",
     "outDir": "../main"
   },
-  "include": [
-    "**/*.ts",
-    "../assets/**/*"
-  ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "include": ["**/*.ts", "**/*.tsx", "**/*.js"]
 }
