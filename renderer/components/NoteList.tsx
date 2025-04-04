@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function NoteList() {
-  const { notes, selectedNote, selectNote, deleteNote, addNote, hasChanges } = useNotes()
+  const { notes, selectedNote, selectNote, deleteNote, addNote, hasChanges, refreshNotes, unSelectNote } = useNotes()
   const [notesDir, setNotesDir] = useState<string>("")
 
   useEffect(() => {
@@ -30,7 +30,6 @@ export function NoteList() {
       if (!response) return
     }
     addNote()
-    
   }
 
   const handleChangeNotesDir = async () => {
@@ -41,8 +40,8 @@ export function NoteList() {
     const newDir = await window.note.setNotesDir()
     if (newDir) {
       setNotesDir(newDir)
-      // 노트 목록 새로고침
-      window.location.reload()
+      unSelectNote()
+      refreshNotes()
     }
   }
 
@@ -54,8 +53,8 @@ export function NoteList() {
     const defaultDir = await window.note.resetNotesDir()
     if (defaultDir) {
       setNotesDir(defaultDir)
-      // 노트 목록 새로고침
-      window.location.reload()
+      unSelectNote()
+      refreshNotes()
     }
   }
 

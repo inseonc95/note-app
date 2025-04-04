@@ -12,35 +12,33 @@ interface NoteContextType {
   unSelectNote: () => void
   hasChanges: boolean
   setHasChanges: (hasChanges: boolean) => void
+  refreshNotes: () => void
 }
 
 const NoteContext = createContext<NoteContextType | null>(null)
 
-export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
+export function NoteProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useState<Note[]>([])
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [hasChanges, setHasChanges] = useState(false)
 
+  const refreshNotes = useCallback(async () => {
+    const loadedNotes = await window.note.loadNotes()
+    setNotes(loadedNotes)
+    if (selectedNote && !loadedNotes.find(note => note.id === selectedNote.id)) {
+      setSelectedNote(null)
+    }
+
+    setHasChanges(false)
+  }, [selectedNote])
+
+  useEffect(() => {
+    refreshNotes()
+  }, [refreshNotes])
 
   useEffect(() => {
     window.electron.updateHasChanges(hasChanges)
   }, [hasChanges])
-
-  useEffect(() => {
-    loadNotes()
-  }, [])
-
-  const loadNotes = async () => {
-    try {
-      const loadedNotes = await window.note.loadNotes()
-      setNotes(loadedNotes)
-      if (loadedNotes.length > 0 && !selectedNote) {
-        setSelectedNote(loadedNotes[0])
-      }
-    } catch (error) {
-      console.error('Failed to load notes:', error)
-    }
-  }
 
   const addNote = async () => {
     setHasChanges(false)
@@ -87,6 +85,7 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
 
   const unSelectNote = () => {
     setSelectedNote(null)
+    setHasChanges(false)
   }
 
   const updateNote = useCallback(async (id: string, updates: Partial<Note>) => {
@@ -122,6 +121,7 @@ export const NoteProvider = ({ children }: { children: React.ReactNode }) => {
         unSelectNote,
         hasChanges,
         setHasChanges,
+        refreshNotes,
       }}
     >
       {children}

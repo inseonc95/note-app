@@ -199,7 +199,13 @@ export const NoteEditor = () => {
                   <Button 
                   variant="ghost" size="icon" 
                   className="bg-transparent hover:bg-transparent"
-                  onClick={unSelectNote}>
+                  onClick={()=> {
+                    if (hasChanges) {
+                      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
+                      if (!response) return
+                    }
+                    unSelectNote()
+                  }}>
                     <X className="size-4 text-muted-foreground" />
                   </Button>
                 </div>
