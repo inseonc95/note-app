@@ -11,7 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React.RefObject<editor.IStandaloneCodeEditor>, setMonacoEditorRef: (editor: editor.IStandaloneCodeEditor | null) => void }) => {
   const { selectedNote, updateNote, unSelectNote, hasChanges, setHasChanges } = useNotes()
-  const { addSelectedText, setEditorRef, isShowAIChat, toggleAIChat } = useChat()
+  const { addSelectedText, setEditorRef, isShowAIChat, toggleAIChat, hasApiKey } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const [showButton, setShowButton] = useState(false)
   const isShowAIChatRef = useRef(isShowAIChat)
@@ -262,6 +262,14 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   }
 
   const handleEditBoxSubmit = (e: React.FormEvent) => {
+    if (!hasApiKey) {
+      closeEditBox()
+      if (!isShowAIChat) {
+        toggleAIChat()
+      }
+      alert("API 키를 등록해주세요.")
+      return
+    }
     e.preventDefault()
     setShowPreview(true)
   }

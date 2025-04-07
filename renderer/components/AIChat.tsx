@@ -11,8 +11,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { ApiKeyButton } from "./ApiKeyButton"
-
+import { AddApiKeyButton } from "./AddApiKeyButton"
+import { EditApiKeyButton } from "./EditApiKeyButton"
 export interface AIChatRef {
   focus: () => void
   setInputValue: (value: string) => void
@@ -29,13 +29,14 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     removeSelectedText,
     clearSelectedTexts,
     chatInputRef,
-    applyToEditor
+    applyToEditor,
+    hasApiKey,
+    setHasApiKey,
   } = useChat()
   const { selectedNote, updateNote } = useNotes()
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [appliedId, setAppliedId] = useState<string | null>(null)
-  const [hasApiKey, setHasApiKey] = useState(false)
 
   useEffect(() => {
     // 컴포넌트가 마운트된 후에 포커스
@@ -74,13 +75,6 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     }
   }, [isLoading])
 
-  useEffect(() => {
-    const checkApiKey = async () => {
-      const hasKey = await window.chat.checkApiKey()
-      setHasApiKey(hasKey)
-    }
-    checkApiKey()
-  }, [])
 
   const handleCopy = async (messageId: string, content: string) => {
     try {
@@ -97,7 +91,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
       const response = await window.chat.saveApiKey(apiKey);
       if (response) {
         alert("API 키 등록에 성공했습니다.");
-        setHasApiKey(true);
+        setHasApiKey(true)
       }
     } catch (error) {
       alert("API 키 등록에 실패했습니다. 다시 시도해주세요.");
@@ -156,24 +150,16 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
     <>
       <div className="flex h-8 items-center border-b px-4 mt-2">
         <h2 className="text-sm font-semibold cursor-help">AI Assistant</h2>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div>
-                <ApiKeyButton handleSave={handleSave} />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>API 키를 설정하여 AI Assistant를 사용할 수 있습니다.</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        {hasApiKey && (
+          <EditApiKeyButton />
+        )}
       </div>
 
       <div className="flex-1 overflow-hidden">
         <div className="flex h-full flex-col">
           <div className="flex-1 overflow-hidden">
-            <ScrollArea className="h-full">
+            {hasApiKey ? (
+              <ScrollArea className="h-full">
             
               <div className="p-4 space-y-4">
                 {messages.map((message) => (
@@ -261,6 +247,22 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                <AddApiKeyButton handleSave={handleSave} />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>API 키를 설정하여 AI Assistant를 사용할 수 있습니다.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+              </div>
+            )}
           </div>
           <div>
             <div className="px-2 py-2">

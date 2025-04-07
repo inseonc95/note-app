@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, ReactNode } from "react"
+import { createContext, useContext, useState, useRef, ReactNode, useCallback, useEffect } from "react"
 
 interface Message {
   id: string
@@ -28,6 +28,8 @@ interface ChatContextType {
   chatInputRef: React.RefObject<HTMLTextAreaElement>
   setEditorRef: (ref: { handleApply: (content: string) => void } | null) => void
   applyToEditor: (content: string) => void
+  hasApiKey: boolean
+  setHasApiKey: (hasApiKey: boolean) => void
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -37,9 +39,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTexts, setSelectedTexts] = useState<SelectedText[]>([])
   const [isShowAIChat, setIsShowAIChat] = useState(false)
+  const [hasApiKey, setHasApiKey] = useState(false)
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<{ handleApply: (content: string) => void } | null>(null)
 
+  const checkApiKey = useCallback(async () => {
+    const hasKey = await window.chat.checkApiKey()
+    setHasApiKey(hasKey)
+  }, [])
+
+  useEffect(() => {
+    checkApiKey()
+  }, [checkApiKey])
 
   const toggleAIChat = () => {
     setIsShowAIChat(prev => !prev);
@@ -110,7 +121,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setEditorRef,
         applyToEditor,
         isShowAIChat,
-        toggleAIChat
+        toggleAIChat,
+        hasApiKey,
+        setHasApiKey,
       }}
     >
       {children}

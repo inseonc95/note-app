@@ -1,6 +1,4 @@
-import { forwardRef, useState } from "react"
-import { Copy } from "lucide-react"
-
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -13,9 +11,9 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Settings } from "lucide-react"
+import { KeyRound } from "lucide-react"
 
-export const ApiKeyButton = ({ handleSave }: { handleSave: (apiKey: string) => void }) => {
+export const AddApiKeyButton = ({ handleSave }: { handleSave: (apiKey: string) => void }) => {
   const [apiKey, setApiKey] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
@@ -24,7 +22,7 @@ export const ApiKeyButton = ({ handleSave }: { handleSave: (apiKey: string) => v
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost"><Settings className="size-4" /></Button>
+        <Button variant="ghost">API 키 추가<KeyRound className="size-4" /></Button>
       </DialogTrigger>
       <DialogContent>
         <div className="flex flex-col gap-4">
@@ -44,10 +42,10 @@ export const ApiKeyButton = ({ handleSave }: { handleSave: (apiKey: string) => v
               onChange={(e) => setApiKey(e.target.value)}
               placeholder="sk-..."
             />
-            <p className="text-xs text-gray-500">
+            {/* <p className="text-xs text-gray-500">
               <span className="font-bold text-red-500 pr-1">주의</span>
               이미 등록된 키가 있으면 등록된 키가 삭제되고 새로운 키가 등록됩니다.
-            </p>
+            </p> */}
           </div>
 
           <DialogFooter>
