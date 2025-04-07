@@ -9,11 +9,10 @@ import { cn } from "@/lib/utils"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 
-export const NoteEditor = () => {
+export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React.RefObject<editor.IStandaloneCodeEditor>, setMonacoEditorRef: (editor: editor.IStandaloneCodeEditor | null) => void }) => {
   const { selectedNote, updateNote, unSelectNote, hasChanges, setHasChanges } = useNotes()
   const { addSelectedText, setEditorRef, isShowAIChat, toggleAIChat } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
-  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [showButton, setShowButton] = useState(false)
   const isShowAIChatRef = useRef(isShowAIChat)
   
@@ -151,7 +150,7 @@ export const NoteEditor = () => {
   }
 
   const handleEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    editorRef.current = editor
+    setMonacoEditorRef(editor)
 
     // 초기 마운트 시 포커스 설정
     requestAnimationFrame(() => {

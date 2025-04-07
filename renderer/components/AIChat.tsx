@@ -184,7 +184,7 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
                     }`}
                   >
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
+                      className={`max-w-[100%] w-full rounded-lg p-3 ${
                         message.role === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-background"

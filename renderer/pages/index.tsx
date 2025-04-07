@@ -9,16 +9,24 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable"
 
-
+import { editor } from "monaco-editor"
 const IndexPage = () => {
   const aiChatRef = useRef<AIChatRef>(null);
   const { isShowAIChat, toggleAIChat } = useChat();
+
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
+  const setMonacoEditorRef = (editor: editor.IStandaloneCodeEditor | null) => {
+    editorRef.current = editor
+  }
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
         e.preventDefault();
         toggleAIChat();
+        if (editorRef.current) {
+          editorRef.current.focus()
+        }
       }
     };
 
@@ -41,7 +49,10 @@ const IndexPage = () => {
       <ResizablePanel 
       defaultSize={50}
       className="flex flex-col bg-background rounded-t-xl">
-        <NoteEditor />
+        <NoteEditor 
+        editorRef={editorRef}
+        setMonacoEditorRef={setMonacoEditorRef}
+        />
       </ResizablePanel>
       {isShowAIChat && (
         <>

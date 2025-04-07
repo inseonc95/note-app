@@ -62,7 +62,7 @@ export class OpenAIService {
       const allMessages = this.createSystemMessage(messages, noteContent)
   
       const response = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o",
         messages: allMessages,
         temperature: 0.7,
         max_tokens: 500,
