@@ -1,7 +1,7 @@
 import { useNotes } from "@/contexts/NoteContext"
 import { useRef, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Command, X, Send } from "lucide-react"
+import { Command, X, Send, Check } from "lucide-react"
 import { useChat } from "@/contexts/ChatContext"
 import Editor, { Monaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
@@ -24,6 +24,7 @@ export const NoteEditor = () => {
   const [editBoxContent, setEditBoxContent] = useState("")
   const [editTargetContent, setEditTargetContent] = useState("")
   const [showEditBox, setShowEditBox] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,15 +68,20 @@ export const NoteEditor = () => {
         if (selection) {
           const model = editorRef.current.getModel()
           if (model) {
-            model.applyEdits([{
-              range: {
-                startLineNumber: selection.endLineNumber,
-                startColumn: selection.endColumn,
-                endLineNumber: selection.endLineNumber,
-                endColumn: selection.endColumn
-              },
-              text: `\n${content}\n`
-            }])
+            model.pushEditOperations(
+              [],
+              [{
+                range: {
+                  startLineNumber: selection.endLineNumber,
+                  startColumn: selection.endColumn,
+                  endLineNumber: selection.endLineNumber,
+                  endColumn: selection.endColumn
+                },
+                text: `\n${content}\n`,
+                forceMoveMarkers: true
+              }],
+              () => null
+            )
           }
         } else {
           // 선택된 텍스트가 없는 경우, 현재 커서 위치에 삽입
@@ -83,15 +89,20 @@ export const NoteEditor = () => {
           if (currentPosition) {
             const model = editorRef.current.getModel()
             if (model) {
-              model.applyEdits([{
-                range: {
-                  startLineNumber: currentPosition.lineNumber,
-                  startColumn: currentPosition.column,
-                  endLineNumber: currentPosition.lineNumber,
-                  endColumn: currentPosition.column
-                },
-                text: `\n${content}\n`
-              }])
+              model.pushEditOperations(
+                [],
+                [{
+                  range: {
+                    startLineNumber: currentPosition.lineNumber,
+                    startColumn: currentPosition.column,
+                    endLineNumber: currentPosition.lineNumber,
+                    endColumn: currentPosition.column
+                  },
+                  text: `\n${content}\n`,
+                  forceMoveMarkers: true
+                }],
+                () => null
+              )
             }
           }
         }
@@ -224,6 +235,7 @@ export const NoteEditor = () => {
   const closeEditBox = () => {
     setEditBoxContent("")
     setShowEditBox(false)
+    setShowPreview(false)
     if (editorRef.current) {
       const position = editorRef.current.getPosition()
       if (position) {
@@ -235,6 +247,10 @@ export const NoteEditor = () => {
 
   const handleEditBoxSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowPreview(true)
+  }
+
+  const handleApply = () => {
     if (!editorRef.current) return
 
     const position = editorRef.current.getPosition()
@@ -243,15 +259,21 @@ export const NoteEditor = () => {
     const model = editorRef.current.getModel()
     if (!model) return
 
-    model.applyEdits([{
-      range: {
-        startLineNumber: position.lineNumber,
-        startColumn: position.column,
-        endLineNumber: position.lineNumber,
-        endColumn: position.column
-      },
-      text: editBoxContent
-    }])
+    // 현재 편집을 undo 스택에 추가
+    model.pushEditOperations(
+      [],
+      [{
+        range: {
+          startLineNumber: position.lineNumber,
+          startColumn: position.column,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        },
+        text: editBoxContent,
+        forceMoveMarkers: true
+      }],
+      () => null
+    )
 
     closeEditBox()
   }
@@ -348,28 +370,56 @@ export const NoteEditor = () => {
                   width: '400px',
                 }}
               >
-                <form onSubmit={handleEditBoxSubmit}
-                className="flex items-center gap-2 bg-background rounded-md p-2"
-                >
-                  <textarea 
-                  ref={editBoxRef}
-                  className="w-full resize-none border-none text-xs font-bold focus:outline-none h-[17px]"
-                  placeholder="수정하세요"
-                  value={editBoxContent}
-                  onChange={(e) => setEditBoxContent(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault()
-                      handleEditBoxSubmit(e as React.FormEvent)
-                    }
-                  }}
-                  />
-                  <Button type="submit" size="icon" className="h-6 w-6">
-                    <Send className="size-3" />
-                  </Button>
-                </form>
+                {!showPreview ? (
+                  <form onSubmit={handleEditBoxSubmit} className="flex items-center gap-2 bg-background rounded-md p-2">
+                    <textarea 
+                      ref={editBoxRef}
+                      className="w-full resize-none border-none text-xs font-bold focus:outline-none h-[17px]"
+                      placeholder="수정하세요"
+                      value={editBoxContent}
+                      onChange={(e) => setEditBoxContent(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleEditBoxSubmit(e)
+                        }
+                      }}
+                    />
+                    <Button type="submit" size="icon" className="h-6 w-6">
+                      <Send className="size-3" />
+                    </Button>
+                  </form>
+                ) : (
+                  <div className="flex flex-col gap-2 bg-background rounded-md p-2">
+                    <div className="flex flex-col gap-1">
+                      <div className="text-xs text-muted-foreground">원본: {editTargetContent}</div>
+                      <div className="text-xs text-green-600">{editBoxContent}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <Button 
+                          type="button" 
+                          size="icon" 
+                          className="h-6 w-6"
+                          variant="outline"
+                          onClick={handleApply}
+                        >
+                          <Check className="size-3" />
+                        </Button>
+                        <Button 
+                          type="button" 
+                          size="icon" 
+                          className="h-6 w-6"
+                          variant="outline"
+                          onClick={closeEditBox}
+                        >
+                          <X className="size-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-
             )}
             {showButton && (
               <div
