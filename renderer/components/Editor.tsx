@@ -1,7 +1,7 @@
 import { useNotes } from "@/contexts/NoteContext"
 import { useRef, useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Command, X, Plus } from "lucide-react"
+import { Command, X, Send } from "lucide-react"
 import { useChat } from "@/contexts/ChatContext"
 import Editor, { Monaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
@@ -15,11 +15,33 @@ export const NoteEditor = () => {
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [showButton, setShowButton] = useState(false)
+  
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
   const [content, setContent] = useState(selectedNote?.content || "")
   const [title, setTitle] = useState(selectedNote?.title || "")
 
-  
+  const editBoxRef = useRef<HTMLTextAreaElement>(null)
+  const [editBoxContent, setEditBoxContent] = useState("")
+  const [editTargetContent, setEditTargetContent] = useState("")
+  const [showEditBox, setShowEditBox] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && showEditBox) {
+        closeEditBox()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showEditBox])
+
+  useEffect(() => {
+    if (showEditBox && editBoxRef.current) {
+      editBoxRef.current.focus()
+    }
+  }, [showEditBox])
+
   useEffect(() => {
     setContent(selectedNote?.content || "")
     setTitle(selectedNote?.title || "")
@@ -73,9 +95,19 @@ export const NoteEditor = () => {
             }
           }
         }
+
+        if (editorRef.current) {
+          const position = editorRef.current.getPosition()
+          if (position) {
+            editorRef.current.setPosition(position)
+            editorRef.current.focus()
+          }
+        }
       }
     })
-    return () => setEditorRef(null)
+    return () => {
+      setEditorRef(null)
+    }
   }, [setEditorRef])
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -133,7 +165,7 @@ export const NoteEditor = () => {
     })
 
     // Command+K 단축키 처리
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI, () => {
       const selection = editor.getSelection()
       if (!selection) return
 
@@ -143,6 +175,23 @@ export const NoteEditor = () => {
       const selectedText = model.getValueInRange(selection)
       if (selectedText.trim()) {
         addSelectedText(selectedText)
+        setShowButton(false)
+      }
+    })
+
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, () => {
+      const selection = editor.getSelection()
+      if (!selection) return
+
+      const model = editor.getModel()
+      if (!model) return
+
+      const selectedText = model.getValueInRange(selection)
+      if (selectedText.trim()) {
+        setEditTargetContent(selectedText)
+        editBoxRef.current?.focus()
+        setShowEditBox(true)
         setShowButton(false)
       }
     })
@@ -170,6 +219,41 @@ export const NoteEditor = () => {
         노트를 선택하거나 새로 만들어주세요
       </div>
     )
+  }
+
+  const closeEditBox = () => {
+    setEditBoxContent("")
+    setShowEditBox(false)
+    if (editorRef.current) {
+      const position = editorRef.current.getPosition()
+      if (position) {
+        editorRef.current.setPosition(position)
+        editorRef.current.focus()
+      }
+    }
+  }
+
+  const handleEditBoxSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editorRef.current) return
+
+    const position = editorRef.current.getPosition()
+    if (!position) return
+
+    const model = editorRef.current.getModel()
+    if (!model) return
+
+    model.applyEdits([{
+      range: {
+        startLineNumber: position.lineNumber,
+        startColumn: position.column,
+        endLineNumber: position.lineNumber,
+        endColumn: position.column
+      },
+      text: editBoxContent
+    }])
+
+    closeEditBox()
   }
 
   return (
@@ -255,6 +339,38 @@ export const NoteEditor = () => {
                 padding: { top: 16, bottom: 16 },
               }}
             />
+            {showEditBox && (
+              <div
+                className="fixed z-50 p-2 bg-accent rounded-md shadow-lg"
+                style={{
+                  top: `${buttonPosition.top}px`,
+                  left: `${buttonPosition.left}px`,
+                  width: '400px',
+                }}
+              >
+                <form onSubmit={handleEditBoxSubmit}
+                className="flex items-center gap-2 bg-background rounded-md p-2"
+                >
+                  <textarea 
+                  ref={editBoxRef}
+                  className="w-full resize-none border-none text-xs font-bold focus:outline-none h-[17px]"
+                  placeholder="수정하세요"
+                  value={editBoxContent}
+                  onChange={(e) => setEditBoxContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault()
+                      handleEditBoxSubmit(e as React.FormEvent)
+                    }
+                  }}
+                  />
+                  <Button type="submit" size="icon" className="h-6 w-6">
+                    <Send className="size-3" />
+                  </Button>
+                </form>
+              </div>
+
+            )}
             {showButton && (
               <div
                 className="fixed z-50 bg-primary text-primary-foreground px-2 py-1 rounded-md shadow-lg"
@@ -268,7 +384,15 @@ export const NoteEditor = () => {
                   className="h-6 text-xs"
                   onClick={handleAddToChat}
                 >
-                  <span>Add to chat</span>
+                  <span>chat</span>
+                </Button>
+                <span className="text-muted-foreground">|</span> 
+                <Button
+                  size="sm"
+                  className="h-6 text-xs"
+                  onClick={handleAddToChat}
+                >
+                  <span>Edit</span>
                   <div className="flex items-center text-gray-400">
                     <Command className="size-3 ml-2" />
                     <span className="font-mono">K</span>
