@@ -37,11 +37,7 @@ export class OpenAIService {
   private createSystemMessage(messages: ChatMessage[], noteContent?: string) {
     const systemMessage: ChatMessage = {
       role: "system",
-      content: `You are a helpful AI assistant. 
-      Always focus on answering the current question directly and clearly.
-      Use previous conversation context only as reference, but don't dwell on it.
-      Keep your responses concise and to the point.
-      If you're unsure about something, say so directly.`,
+      content: `You are an AI assistant provided by a note editor.`,
     }
 
     return [systemMessage, ...messages, ...(noteContent ? [{

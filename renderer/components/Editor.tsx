@@ -166,19 +166,19 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
       if (!model) return
 
       const selectedText = model.getValueInRange(selection)
-      
-      if (selectedText.trim()) {
-        const position = editor.getPosition()
-        if (!position) return
+      const position = editor.getPosition()
+      if (!position) return
 
-        const coords = editor.getScrolledVisiblePosition(position)
-        const editorElement = editor.getDomNode()
-        const rect = editorElement.getBoundingClientRect()
-        
-        setButtonPosition({
-          top: rect.top + coords.top + 20,
-          left: rect.left + coords.left,
-        })
+      const coords = editor.getScrolledVisiblePosition(position)
+      const editorElement = editor.getDomNode()
+      const rect = editorElement.getBoundingClientRect()
+      
+      setButtonPosition({
+        top: rect.top + coords.top + 20,
+        left: rect.left + coords.left,
+      })
+      if (selectedText.trim()) {
+
         setShowButton(true)
       } else {
         setShowButton(false)
@@ -220,6 +220,43 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
         editBoxRef.current?.focus()
         setShowEditBox(true)
         setShowButton(false)
+      } else {
+        // 여기서 커서 아래에 모든 텍스트를 하이라이트처리
+        const position = editor.getPosition()
+        if (!position) return
+        const model = editor.getModel()
+        if (!model) return
+
+        
+        // 현재 커서 위치부터 문서 끝까지 선택
+        const endPosition = {
+          lineNumber: model.getLineCount(),
+          column: model.getLineMaxColumn(model.getLineCount())
+        }
+        
+        editor.setSelection({
+          startLineNumber: endPosition.lineNumber,
+          startColumn: endPosition.column,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        })
+
+        // 선택된 텍스트를 가져와서 editBox에 표시
+        const newSelectedText = model.getValueInRange({
+          startLineNumber: position.lineNumber,
+          startColumn: position.column,
+          endLineNumber: endPosition.lineNumber,
+          endColumn: endPosition.column
+        })
+        
+        setEditTargetContent(newSelectedText)
+        setShowEditBox(true)
+        setShowButton(false)
+        
+        // 다음 프레임에서 editBox에 포커스
+        requestAnimationFrame(() => {
+          editBoxRef.current?.focus()
+        })
       }
     })
   }
@@ -235,8 +272,15 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
 
     const selectedText = model.getValueInRange(selection)
     if (selectedText.trim()) {
+      if (!isShowAIChatRef.current) {
+        toggleAIChat()
+      }
+
+
       addSelectedText(selectedText)
       setShowButton(false)
+    } else {
+      toggleAIChat()
     }
   }
 
@@ -261,7 +305,8 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
     }
   }
 
-  const handleEditBoxSubmit = (e: React.FormEvent) => {
+
+  const handleEditBoxSubmit = async (e: React.FormEvent) => {
     if (!hasApiKey) {
       closeEditBox()
       if (!isShowAIChat) {
@@ -271,6 +316,16 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
       return
     }
     e.preventDefault()
+    const response = await window.chat.sendMessage(
+      [
+        {
+          role: "user",
+          content: editBoxContent
+        },
+      ], 
+      editTargetContent
+    )
+    setEditBoxContent(response)
     setShowPreview(true)
   }
 
