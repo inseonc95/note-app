@@ -16,6 +16,8 @@ interface ChatContextType {
   messages: Message[]
   selectedTexts: SelectedText[]
   isLoading: boolean
+  isShowAIChat: boolean
+  toggleAIChat: () => void
   addMessage: (role: "user" | "assistant", content: string) => void
   clearMessages: () => void
   setIsLoading: (loading: boolean) => void
@@ -34,8 +36,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [selectedTexts, setSelectedTexts] = useState<SelectedText[]>([])
+  const [isShowAIChat, setIsShowAIChat] = useState(false)
   const chatInputRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<{ handleApply: (content: string) => void } | null>(null)
+
+
+  const toggleAIChat = () => {
+    setIsShowAIChat(prev => !prev);
+  }
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     const newMessage: Message = {
@@ -100,7 +108,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         chatInputRef,
         focusChatInput,
         setEditorRef,
-        applyToEditor
+        applyToEditor,
+        isShowAIChat,
+        toggleAIChat
       }}
     >
       {children}

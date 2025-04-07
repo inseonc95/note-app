@@ -20,7 +20,7 @@ app.on("ready", async () => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    // titleBarStyle: 'hiddenInset',
+    titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

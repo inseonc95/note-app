@@ -37,16 +37,28 @@ export const AIChat = forwardRef<AIChatRef>((props, ref) => {
   const [appliedId, setAppliedId] = useState<string | null>(null)
   const [hasApiKey, setHasApiKey] = useState(false)
 
+  useEffect(() => {
+    // 컴포넌트가 마운트된 후에 포커스
+    const timer = setTimeout(() => {
+      if (chatInputRef.current) {
+        chatInputRef.current.focus()
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [])
+
   useImperativeHandle(ref, () => ({
     focus: () => {
-      chatInputRef.current?.focus()
+      if (chatInputRef.current) {
+        chatInputRef.current.focus()
+      }
     },
     setInputValue: (value: string) => {
       if (chatInputRef.current) {
         chatInputRef.current.value = value
       }
     }
-  }))
+  }), [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })

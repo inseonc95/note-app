@@ -1,23 +1,61 @@
-import { useRef } from "react";
-
+import { useRef, useEffect } from "react";
+import { useChat } from "@/contexts/ChatContext";
 import { NoteList } from "@/components/NoteList";
 import { NoteEditor } from "@/components/Editor";
 import { AIChat, AIChatRef } from "@/components/AIChat";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
+
 
 const IndexPage = () => {
   const aiChatRef = useRef<AIChatRef>(null);
+  const { isShowAIChat, toggleAIChat } = useChat();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'i') {
+        e.preventDefault();
+        toggleAIChat();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleAIChat]);
+
   return (
-    <div className="flex h-[calc(100vh-28px)] bg-accent">
-      <div className="w-1/4  flex flex-col">        
+    <ResizablePanelGroup direction="horizontal"
+    className="flex h-[calc(100vh-28px)] bg-accent"
+    >
+      <ResizablePanel 
+      defaultSize={20}
+      className="flex flex-col">        
         <NoteList />
-      </div>
-      <div className="w-1/2 flex flex-col bg-background rounded-t-xl">
+      </ResizablePanel>
+      <ResizableHandle 
+      className="bg-transparent"
+      />
+      <ResizablePanel 
+      defaultSize={50}
+      className="flex flex-col bg-background rounded-t-xl">
         <NoteEditor />
-      </div>
-      <div className="w-1/4  flex flex-col">
-        <AIChat ref={aiChatRef} />
-      </div>
-    </div>
+      </ResizablePanel>
+      {isShowAIChat && (
+        <>
+          <ResizableHandle 
+          className="bg-transparent"
+          />
+          <ResizablePanel 
+          defaultSize={20}
+          className="flex flex-col">
+            <AIChat ref={aiChatRef} />
+          </ResizablePanel>
+        </>
+      )}
+    </ResizablePanelGroup>
   );
 };
 

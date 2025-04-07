@@ -11,10 +11,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export const NoteEditor = () => {
   const { selectedNote, updateNote, unSelectNote, hasChanges, setHasChanges } = useNotes()
-  const { addSelectedText, setEditorRef } = useChat()
+  const { addSelectedText, setEditorRef, isShowAIChat, toggleAIChat } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const [showButton, setShowButton] = useState(false)
+  const isShowAIChatRef = useRef(isShowAIChat)
   
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
   const [content, setContent] = useState(selectedNote?.content || "")
@@ -59,6 +60,11 @@ export const NoteEditor = () => {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [hasChanges, title, content, selectedNote])
+
+
+  useEffect(() => {
+    isShowAIChatRef.current = isShowAIChat
+  }, [isShowAIChat])
 
   useEffect(() => {
     setEditorRef({
@@ -147,6 +153,11 @@ export const NoteEditor = () => {
   const handleEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editor
 
+    // 초기 마운트 시 포커스 설정
+    requestAnimationFrame(() => {
+      editor.focus()
+    })
+
     // 선택 변경 이벤트 처리
     editor.onDidChangeCursorSelection((e) => {
       const selection = editor.getSelection()
@@ -175,7 +186,7 @@ export const NoteEditor = () => {
       }
     })
 
-    // Command+K 단축키 처리
+    // Command+I 단축키 처리
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI, () => {
       const selection = editor.getSelection()
       if (!selection) return
@@ -185,8 +196,14 @@ export const NoteEditor = () => {
 
       const selectedText = model.getValueInRange(selection)
       if (selectedText.trim()) {
+        if (!isShowAIChatRef.current) {
+          toggleAIChat()
+        }
+        
         addSelectedText(selectedText)
         setShowButton(false)
+      } else {
+        toggleAIChat()
       }
     })
 
