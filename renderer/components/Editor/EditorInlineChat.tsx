@@ -2,12 +2,12 @@ import { Button } from "@/components/ui/button"
 import { Check, Send, X } from "lucide-react"
 
 
-export const EditorEditBox = ({
+export const EditorInlineChat = ({
   position,
   showPreview,
-  editBoxRef,
-  editBoxContent,
-  editTargetContent,
+  inlineChatRef,
+  inlineChatContent,
+  inlineChatTargetContent,
   onSubmit,
   onChange,
   onApply,
@@ -15,9 +15,9 @@ export const EditorEditBox = ({
 }: {
   position: { top: number; left: number };
   showPreview: boolean;
-  editBoxRef: React.RefObject<HTMLTextAreaElement>;
-  editBoxContent: string;
-  editTargetContent: string;
+  inlineChatRef: React.RefObject<HTMLTextAreaElement>;
+  inlineChatContent: string;
+  inlineChatTargetContent: string;
   onSubmit: (e: React.FormEvent) => void;
   onChange: (value: string) => void;
   onApply: () => void;
@@ -35,10 +35,10 @@ export const EditorEditBox = ({
       {!showPreview ? (
         <form onSubmit={onSubmit} className="flex items-center gap-2 bg-background rounded-md p-2">
           <textarea 
-            ref={editBoxRef}
+            ref={inlineChatRef}
             className="w-full resize-none border-none text-xs font-bold focus:outline-none h-[17px]"
             placeholder="수정하세요"
-            value={editBoxContent}
+            value={inlineChatContent}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
@@ -54,8 +54,8 @@ export const EditorEditBox = ({
       ) : (
         <div className="flex flex-col gap-2 bg-background rounded-md p-2">
           <div className="flex flex-col gap-1">
-            <div className="text-xs text-muted-foreground">원본: {editTargetContent}</div>
-            <div className="text-xs text-green-600">{editBoxContent}</div>
+            <div className="text-xs text-muted-foreground">원본: {inlineChatTargetContent}</div>
+            <div className="text-xs text-green-600">{inlineChatContent}</div>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex gap-1">

@@ -1,11 +1,10 @@
-import { useNotes } from "@/contexts/NoteContext"
 import { useRef, useState, useEffect } from "react"
 import { useChat } from "@/contexts/ChatContext"
 import Editor, { Monaco } from "@monaco-editor/react"
 import { editor } from "monaco-editor"
 
 import { EditorToolbar } from "./Editor/EditorToolbar"
-import { EditorEditBox } from "./Editor/EditorEditBox"
+import { EditorInlineChat } from "./Editor/EditorInlineChat"
 import { EditorMetadata } from "./Editor/EditorMetadata"
 import { EditorHeader } from "./Editor/EditorHeader"
 
@@ -15,63 +14,65 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   const { selectedNote, title, setTitle, content, setContent, hasChanges, handleTitleChange, handleEditorChange, handleSave, closeEditor } = useEditor()
   const { addSelectedText, setEditorRef, isShowAIChat, toggleAIChat, hasApiKey } = useChat()
   const titleRef = useRef<HTMLTextAreaElement>(null)
-  const [showButton, setShowButton] = useState(false)
+  const [showToolbar, setShowToolbar] = useState(false)
+  
   const isShowAIChatRef = useRef(isShowAIChat)
   const [buttonPosition, setButtonPosition] = useState({ top: 0, left: 0 })
 
-  const editBoxRef = useRef<HTMLTextAreaElement>(null)
-  const [editBoxContent, setEditBoxContent] = useState("")
-  const [editTargetContent, setEditTargetContent] = useState("")
-  const [showEditBox, setShowEditBox] = useState(false)
+  const inlineChatRef = useRef<HTMLTextAreaElement>(null)
+  const [inlineChatContent, setInlineChatContent] = useState("")
+  const [showInlineChat, setShowInlineChat] = useState(false)
+  const [inlineChatTargetContent, setInlineChatTargetContent] = useState("")
+  
   const [showPreview, setShowPreview] = useState(false)
 
   /**
-   * EditBox의 키보드 이벤트 핸들러를 설정하는 useEffect
+   * InlineChat의 키보드 이벤트 핸들러를 설정하는 useEffect
    * 
-   * EditBox가 표시된 상태(showEditBox === true)에서 ESC 키를 누르면 
-   * EditBox를 닫고 관련 상태를 초기화하는 closeEditBox 함수를 실행합니다.
+   * InlineChat가 표시된 상태(showInlineChat === true)에서 ESC 키를 누르면 
+   * InlineChat를 닫고 관련 상태를 초기화하는 closeInlineChat 함수를 실행합니다.
    * 
-   * @dependencies showEditBox - EditBox의 표시 상태를 감지하여 
+   * @dependencies showInlineChat - InlineChat의 표시 상태를 감지하여 
    *              ESC 키 이벤트 핸들러를 조건부로 등록/해제합니다.
    * 
    * @sideEffects
    * - window 객체에 keydown 이벤트 리스너를 추가/제거합니다.
-   * - ESC 키 입력 시 closeEditBox 함수를 호출하여:
-   *   - EditBox의 내용(editBoxContent)을 초기화
-   *   - EditBox의 표시 상태(showEditBox)를 false로 설정
+   * - ESC 키 입력 시 closeInlineChat 함수를 호출하여:
+   *   - InlineChat의 내용(inlineChatContent)을 초기화
+   *   - InlineChat의 표시 상태(showInlineChat)를 false로 설정
    *   - 미리보기 상태(showPreview)를 false로 설정
    *   - 에디터의 커서 위치를 복원하고 포커스를 설정
    */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && showEditBox) {
-        closeEditBox()
+      if (e.key === 'Escape' && showInlineChat) {
+        closeInlineChat()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [showEditBox])
+  }, [showInlineChat])
 
   /**
-   * EditBox의 포커스 관리를 위한 useEffect
+   * InlineChat의 포커스 관리를 위한 useEffect
    * 
-   * EditBox가 표시될 때(showEditBox === true) EditBox 내부의 textarea에
+   * InlineChat가 표시될 때(showInlineChat === true) InlineChat 내부의 textarea에
    * 자동으로 포커스를 설정하여 사용자가 즉시 텍스트를 입력할 수 있도록 합니다.
    * 
-   * @dependencies showEditBox - EditBox의 표시 상태를 감지하여 포커스 처리를 수행
+   * @dependencies showInlineChat - InlineChat의 표시 상태를 감지하여 포커스 처리를 수행
    * 
    * @sideEffects
-   * - EditBox가 표시될 때 editBoxRef.current.focus()를 호출하여
+   * - InlineChat가 표시될 때 inlineChatRef.current.focus()를 호출하여
    *   textarea에 포커스를 설정
-   * - 이는 사용자 경험을 향상시키기 위한 것으로, EditBox가 열리면
+   * - 이는 사용자 경험을 향상시키기 위한 것으로, InlineChat가 열리면
    *   사용자가 추가적인 클릭 없이 바로 텍스트를 입력할 수 있도록 함
    */
   useEffect(() => {
-    if (showEditBox && editBoxRef.current) {
-      editBoxRef.current.focus()
+    if (showInlineChat && inlineChatRef.current) {
+      inlineChatRef.current.focus()
     }
-  }, [showEditBox])
+  }, [showInlineChat])
 
   /**
    * 노트 데이터 동기화를 위한 useEffect
@@ -279,34 +280,34 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
         toggleAIChat()
       }
       addSelectedText(selectedText)
-      setShowButton(false)
+      setShowToolbar(false)
     } else {
       toggleAIChat()
     }
   }
 
   /**
-   * EditBox를 표시하고 텍스트를 선택하는 함수
+   * InlineChat를 표시하고 텍스트를 선택하는 함수
    * 
    * 이 함수는 다음과 같은 동작을 수행합니다:
    * 1. 텍스트가 선택된 경우:
-   *    - 선택된 텍스트를 editTargetContent로 설정
-   *    - EditBox를 표시하고 포커스
+   *    - 선택된 텍스트를 inlineChatTargetContent로 설정
+   *    - InlineChat를 표시하고 포커스
    *    - 선택 버튼 숨기기
    * 
    * 2. 텍스트가 선택되지 않은 경우:
    *    - 현재 커서 위치부터 문서 끝까지 텍스트를 선택
-   *    - 선택된 텍스트를 editTargetContent로 설정
-   *    - EditBox를 표시하고 포커스
+   *    - 선택된 텍스트를 inlineChatTargetContent로 설정
+   *    - InlineChat를 표시하고 포커스
    *    - 선택 버튼 숨기기
    * 
    * @sideEffects
-   * - editTargetContent 상태 업데이트
-   * - showEditBox 상태를 true로 설정
-   * - showButton 상태를 false로 설정
-   * - EditBox에 포커스 설정
+   * - inlineChatTargetContent 상태 업데이트
+   * - showInlineChat 상태를 true로 설정
+   * - showToolbar 상태를 false로 설정
+   * - InlineChat에 포커스 설정
    */
-  const handleShowEdit = () => {
+  const handleShowInlineChat = () => {
     if (!editorRef.current) return
 
     const selection = editorRef.current.getSelection()
@@ -317,10 +318,10 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
 
     const selectedText = model.getValueInRange(selection)
     if (selectedText.trim()) {
-      setEditTargetContent(selectedText)
-      editBoxRef.current?.focus()
-      setShowEditBox(true)
-      setShowButton(false)
+      setInlineChatTargetContent(selectedText)
+      inlineChatRef.current?.focus()
+      setShowInlineChat(true)
+      setShowToolbar(false)
     } else {
       const position = editorRef.current.getPosition()
       if (!position) return
@@ -345,12 +346,12 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
         endColumn: endPosition.column
       })
       
-      setEditTargetContent(newSelectedText)
-      setShowEditBox(true)
-      setShowButton(false)
+      setInlineChatTargetContent(newSelectedText)
+      setShowInlineChat(true)
+      setShowToolbar(false)
       
       requestAnimationFrame(() => {
-        editBoxRef.current?.focus()
+        inlineChatRef.current?.focus()
       })
     }
   }
@@ -377,7 +378,7 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
    * 
    * 4. 단축키 설정
    *    - Command+I: 선택된 텍스트를 AI Chat에 추가하거나 AI Chat 패널을 토글
-   *    - Command+K: EditBox를 표시하고 텍스트를 선택
+   *    - Command+K: InlineChat를 표시하고 텍스트를 선택
    * 
    * @param editor - Monaco Editor 인스턴스
    * @param monaco - Monaco Editor의 전역 객체
@@ -385,7 +386,7 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
    * @sideEffects
    * - editorRef 상태 업데이트
    * - buttonPosition 상태 업데이트
-   * - showButton 상태 업데이트
+   * - showToolbar 상태 업데이트
    * - 에디터의 이벤트 리스너 등록
    * - 에디터의 단축키 설정
    */
@@ -419,9 +420,9 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
           top: rect.top + coords.top + 20,
           left: rect.left + coords.left,
         })
-        setShowButton(true)
+        setShowToolbar(true)
       } else {
-        setShowButton(false)
+        setShowToolbar(false)
       }
     })
 
@@ -429,7 +430,7 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI, handleAddToChat)
 
     // Command+K 단축키 처리
-    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, handleShowEdit)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK, handleShowInlineChat)
   }
 
 
@@ -442,23 +443,23 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   }
 
   /**
-   * EditBox를 닫고 관련 상태를 초기화하는 함수
+   * InlineChat를 닫고 관련 상태를 초기화하는 함수
    * 
-   * EditBox를 닫을 때 다음 작업들을 수행합니다:
-   * 1. EditBox의 내용(editBoxContent)을 빈 문자열로 초기화
-   * 2. EditBox의 표시 상태(showEditBox)를 false로 설정하여 숨김
+   * InlineChat를 닫을 때 다음 작업들을 수행합니다:
+   * 1. InlineChat의 내용(inlineChatContent)을 빈 문자열로 초기화
+   * 2. InlineChat의 표시 상태(showInlineChat)를 false로 설정하여 숨김
    * 3. 미리보기 상태(showPreview)를 false로 설정하여 미리보기 모드 종료
    * 4. 에디터의 커서 위치를 복원하고 포커스를 설정하여 사용자가 계속 편집할 수 있도록 함
    * 
    * @sideEffects
-   * - editBoxContent 상태를 초기화
-   * - showEditBox 상태를 false로 설정
+   * - inlineChatContent 상태를 초기화
+   * - showInlineChat 상태를 false로 설정
    * - showPreview 상태를 false로 설정
    * - 에디터의 커서 위치와 포커스를 복원
    */
-  const closeEditBox = () => {
-    setEditBoxContent("")
-    setShowEditBox(false)
+  const closeInlineChat = () => {
+    setInlineChatContent("")
+    setShowInlineChat(false)
     setShowPreview(false)
     if (editorRef.current) {
       const position = editorRef.current.getPosition()
@@ -470,40 +471,40 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   }
 
   /**
-   * EditBox의 수정 내용을 AI Chat에 제출하고 응답을 처리하는 함수
+   * InlineChat의 수정 내용을 AI Chat에 제출하고 응답을 처리하는 함수
    * 
    * 이 함수는 다음과 같은 순서로 동작합니다:
    * 1. API 키 검증
    *    - API 키가 없는 경우:
-   *      - EditBox를 닫음
+   *      - InlineChat를 닫음
    *      - AI Chat 패널이 닫혀있으면 열기
    *      - API 키 등록 알림 표시
    * 
    * 2. AI Chat 요청 및 응답 처리
-   *    - editBoxContent를 사용자 메시지로 전송
+   *    - inlineChatContent를 사용자 메시지로 전송
    *    - editTargetContent를 컨텍스트로 제공
-   *    - 응답을 받아 editBoxContent를 업데이트
+   *    - 응답을 받아 inlineChatContent를 업데이트
    *    - showPreview를 true로 설정하여 미리보기 모드 활성화
    * 
    * @param e - React의 FormEvent 객체로, 폼 제출 이벤트 정보를 포함
    * 
    * @sideEffects
    * - API 키가 없는 경우:
-   *   - EditBox 닫기
+   *   - InlineChat 닫기
    *   - AI Chat 패널 토글
    *   - 알림 표시
    * - API 키가 있는 경우:
    *   - AI Chat에 메시지 전송
-   *   - editBoxContent 상태 업데이트
+   *   - inlineChatContent 상태 업데이트
    *   - showPreview 상태를 true로 설정
    * 
    * @note
    * - Enter 키로도 제출 가능 (Shift+Enter는 줄바꿈)
    * - 응답을 받으면 자동으로 미리보기 모드로 전환
    */
-  const handleEditBoxSubmit = async (e: React.FormEvent) => {
+  const handleInlineChatSubmit = async (e: React.FormEvent) => {
     if (!hasApiKey) {
-      closeEditBox()
+      closeInlineChat()
       if (!isShowAIChat) {
         toggleAIChat()
       }
@@ -515,12 +516,12 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
       [
         {
           role: "user",
-          content: editBoxContent
+          content: inlineChatContent
         },
       ], 
-      editTargetContent
+      inlineChatTargetContent
     )
-    setEditBoxContent(response)
+    setInlineChatContent(response)
     setShowPreview(true)
   }
 
@@ -528,12 +529,12 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
    * 미리보기 모드에서 수정된 내용을 에디터에 적용하는 함수
    * 
    * showPreview 상태에서 체크 버튼을 클릭했을 때 호출되며,
-   * AI Chat의 응답으로 생성된 editBoxContent를 현재 커서 위치에 삽입합니다.
+   * AI Chat의 응답으로 생성된 inlineChatContent를 현재 커서 위치에 삽입합니다.
    * 
    * @sideEffects
    * - 현재 커서 위치에 editBoxContent를 삽입
    * - forceMoveMarkers: true로 설정하여 삽입된 텍스트가 에디터의 마커를 강제로 이동시킴
-   * - 삽입 후 EditBox를 닫고 관련 상태를 초기화
+   * - 삽입 후 InlineChat를 닫고 관련 상태를 초기화
    * 
    * @note
    * - 에디터가 마운트되지 않았거나 커서 위치가 없는 경우 함수를 조기 종료
@@ -559,13 +560,13 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
           endLineNumber: position.lineNumber,
           endColumn: position.column
         },
-        text: editBoxContent,
+        text: inlineChatContent,
         forceMoveMarkers: true
       }],
       () => null
     )
 
-    closeEditBox()
+    closeInlineChat()
   }
 
   return (
@@ -611,31 +612,28 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
                   padding: { top: 16, bottom: 16 },
                 }}
               />
-              {showEditBox && (
-                <EditorEditBox
+              {showInlineChat && (
+                <EditorInlineChat
                   position={buttonPosition}
                   showPreview={showPreview}
-                  editBoxRef={editBoxRef}
-                  editBoxContent={editBoxContent}
-                  editTargetContent={editTargetContent}
-                  onSubmit={handleEditBoxSubmit}
-                  onChange={setEditBoxContent}
+                  inlineChatRef={inlineChatRef}
+                  inlineChatContent={inlineChatContent}
+                  inlineChatTargetContent={inlineChatTargetContent}
+                  onSubmit={handleInlineChatSubmit}
+                  onChange={setInlineChatContent}
                   onApply={handleApplyPreview}
-                  onClose={closeEditBox}
+                  onClose={closeInlineChat}
                 />
               )}
-              {showButton && (
+              {showToolbar && (
                 <EditorToolbar
                   position={buttonPosition}
                   handleAddToChat={handleAddToChat}
-                  handleShowEdit={handleShowEdit}
+                  handleShowInlineChat={handleShowInlineChat}
                 />
               )}
             </div>
           </div>
-
-
-
         </div>
       </div>
     </div>

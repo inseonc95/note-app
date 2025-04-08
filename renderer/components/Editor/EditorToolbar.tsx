@@ -4,11 +4,11 @@ import { Command } from "lucide-react"
 export const EditorToolbar = ({
   position,
   handleAddToChat,
-  handleShowEdit,
+  handleShowInlineChat,
 }: {
   position: { top: number; left: number };
   handleAddToChat: () => void;
-  handleShowEdit: () => void;
+  handleShowInlineChat: () => void;
 }) => {
   return (
     <div
@@ -29,7 +29,7 @@ export const EditorToolbar = ({
       <Button
         size="sm"
         className="h-6 text-xs"
-        onClick={handleShowEdit}
+        onClick={handleShowInlineChat}
       >
         <span>Edit</span>
         <div className="flex items-center text-gray-400">
