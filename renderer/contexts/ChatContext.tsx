@@ -13,48 +13,34 @@ interface SelectedText {
 }
 
 interface ChatContextType {
-  messages: Message[]
-  selectedTexts: SelectedText[]
-  isLoading: boolean
-  isShowAIChat: boolean
-  toggleAIChat: () => void
-  addMessage: (role: "user" | "assistant", content: string) => void
-  clearMessages: () => void
-  setIsLoading: (loading: boolean) => void
-  addSelectedText: (content: string) => void
-  removeSelectedText: (id: string) => void
-  clearSelectedTexts: () => void
-  focusChatInput: () => void
+  // 메시지 관리
+  messages: Message[] 
+  clearMessages: () => void // AIChatInput에서 호출
+  sendMessage: (content: string) => Promise<void> // AIChatInput에서 호출, message와 selectedTexts를 포함하여 메시지 전송
+  
+  // 선택된 텍스트 관리
+  selectedTexts: SelectedText[] 
+  addSelectedText: (content: string) => void // Editor에서 호출
+  removeSelectedText: (id: string) => void // AIChatInput에서 호출
+  clearSelectedTexts: () => void // AIChatInput에서 호출
+
+  // 에디터 참조 관리
+  setEditorRef: (ref: { handleApply: (content: string) => void } | null) => void // Editor에서 호출
+  applyToEditor: (content: string) => void // AIChatMessages에서 호출
+
+  // AIChatInput 참조 관리
   chatInputRef: React.RefObject<HTMLTextAreaElement>
-  setEditorRef: (ref: { handleApply: (content: string) => void } | null) => void
-  applyToEditor: (content: string) => void
-  hasApiKey: boolean
-  setHasApiKey: (hasApiKey: boolean) => void
+  focusChatInput: () => void // AIChatInput에서 호출
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
 
 export function ChatProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([])
-  const [isLoading, setIsLoading] = useState(false)
   const [selectedTexts, setSelectedTexts] = useState<SelectedText[]>([])
-  const [isShowAIChat, setIsShowAIChat] = useState(false)
-  const [hasApiKey, setHasApiKey] = useState(false)
-  const chatInputRef = useRef<HTMLTextAreaElement>(null)
   const editorRef = useRef<{ handleApply: (content: string) => void } | null>(null)
 
-  const checkApiKey = useCallback(async () => {
-    const hasKey = await window.chat.checkApiKey()
-    setHasApiKey(hasKey)
-  }, [])
-
-  useEffect(() => {
-    checkApiKey()
-  }, [checkApiKey])
-
-  const toggleAIChat = () => {
-    setIsShowAIChat(prev => !prev);
-  }
+  const chatInputRef = useRef<HTMLTextAreaElement>(null)
 
   const addMessage = (role: "user" | "assistant", content: string) => {
     const newMessage: Message = {
@@ -73,15 +59,22 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const addSelectedText = (content: string) => {
     if (!content.trim()) return
 
-    const isDuplicate = selectedTexts.some(text => text.content === content)
-    if (!isDuplicate) {
-      const newText: SelectedText = {
-        id: Date.now().toString(),
-        content: content.trim(),
+    setSelectedTexts(prev => {
+      const isDuplicate = prev.some(text => text.content === content.trim())
+      if (!isDuplicate) {
+        return [...prev, {
+          id: Date.now().toString(),
+          content: content.trim()
+        }]
       }
-      setSelectedTexts((prev) => [...prev, newText])
-      focusChatInput()
-    }
+      return prev
+    })
+
+    focusChatInput() // AiChat패널이 열려있으면 포커스를 에디터에서 이동시키기 위해 호출
+  }
+
+  const focusChatInput = () => {
+    chatInputRef.current?.focus()
   }
 
   const removeSelectedText = (id: string) => {
@@ -92,9 +85,6 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setSelectedTexts([])
   }
 
-  const focusChatInput = () => {
-    chatInputRef.current?.focus()
-  }
 
   const setEditorRef = (ref: { handleApply: (content: string) => void } | null) => {
     editorRef.current = ref
@@ -104,26 +94,48 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     editorRef.current?.handleApply(content)
   }
 
+  const sendMessage = async (content: string) => {
+    addMessage("user", content)
+    try {
+      const updatedMessages = [
+        ...messages,
+        { role: "user" as const, content: content }
+      ]
+      const apiMessages = updatedMessages.map(msg => ({
+        role: msg.role as "user" | "assistant",
+        content: msg.content
+      }))
+
+      // 선택된 텍스트들을 컨텍스트로 포함
+      const contextTexts = selectedTexts.map(text => text.content).join("\n\n")
+      const response = await window.chat.sendMessage(
+        apiMessages,
+        contextTexts || null
+      )
+      addMessage("assistant", response)
+      clearSelectedTexts()
+    } catch (error) {
+      addMessage(
+        "assistant",
+        "죄송합니다. AI 응답을 생성하는 중 오류가 발생했습니다. 다시 시도해주세요."
+      )
+    }
+  }
+
   return (
     <ChatContext.Provider
       value={{
         messages,
-        addMessage,
         clearMessages,
-        isLoading,
-        setIsLoading,
         selectedTexts,
         addSelectedText,
         removeSelectedText,
         clearSelectedTexts,
-        chatInputRef,
-        focusChatInput,
         setEditorRef,
         applyToEditor,
-        isShowAIChat,
-        toggleAIChat,
-        hasApiKey,
-        setHasApiKey,
+        sendMessage,
+        chatInputRef,
+        focusChatInput,
       }}
     >
       {children}

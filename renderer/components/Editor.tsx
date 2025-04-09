@@ -12,11 +12,13 @@ import { useEditor } from "@/hooks/useEditor"
 
 import { EDITOR_OPTIONS } from "@/lib/constants"
 import { useMonacoEditor } from "@/hooks/useMonacoEditor"
-
+import { useChatUI } from "@/contexts/ChatUIContext"
 export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React.RefObject<editor.IStandaloneCodeEditor>, setMonacoEditorRef: (editor: editor.IStandaloneCodeEditor | null) => void }) => {
   const { selectedNote, title, setTitle, content, setContent, hasChanges, handleTitleChange, handleEditorChange, handleSave, closeEditor } = useEditor()
 
-  const { addSelectedText, setEditorRef, isShowAIChat, toggleAIChat, hasApiKey } = useChat()
+  const { addSelectedText, setEditorRef } = useChat()
+  const { hasApiKey } = useChatUI()
+  const { isShowAIChat, toggleAIChat } = useChatUI()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const [showToolbar, setShowToolbar] = useState(false)
   
@@ -29,6 +31,12 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   const [inlineChatTargetContent, setInlineChatTargetContent] = useState("")
   
   const [showPreview, setShowPreview] = useState(false)
+
+  useEffect(() => {
+    if (selectedNote && editorRef.current) {
+      editorRef.current.focus()
+    }
+  }, [selectedNote, editorRef])
 
   /**
    * InlineChat의 키보드 이벤트 핸들러를 설정하는 useEffect

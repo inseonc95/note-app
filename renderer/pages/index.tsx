@@ -1,8 +1,8 @@
 import { useRef, useEffect } from "react";
-import { useChat } from "@/contexts/ChatContext";
 import { NoteList } from "@/components/NoteList";
 import { NoteEditor } from "@/components/Editor";
-import { AIChat, AIChatRef } from "@/components/AIChat";
+import { AIChat } from "@/components/AIChat";
+import { useChatUI } from "@/contexts/ChatUIContext";
 import {
   ResizableHandle,
   ResizablePanel,
@@ -11,8 +11,7 @@ import {
 
 import { editor } from "monaco-editor"
 const IndexPage = () => {
-  const aiChatRef = useRef<AIChatRef>(null);
-  const { isShowAIChat, toggleAIChat } = useChat();
+  const { isShowAIChat, toggleAIChat } = useChatUI();
 
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const setMonacoEditorRef = (editor: editor.IStandaloneCodeEditor | null) => {
@@ -62,7 +61,7 @@ const IndexPage = () => {
           <ResizablePanel 
           defaultSize={20}
           className="flex flex-col">
-            <AIChat ref={aiChatRef} />
+            <AIChat />
           </ResizablePanel>
         </>
       )}

@@ -48,10 +48,6 @@ export const useMonacoEditor = (
   const handleEditorMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     setMonacoEditorRef(editor)
 
-    // 초기 마운트 시 포커스 설정
-    requestAnimationFrame(() => {
-      editor.focus()
-    })
 
     // 선택 변경 이벤트 처리
     editor.onDidChangeCursorSelection((e) => {
