@@ -13,18 +13,19 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function NoteList() {
-  const { notes, selectedNote, selectNote, deleteNote, addNote, hasChanges, refreshNotes, unSelectNote } = useNotes()
-  const [notesDir, setNotesDir] = useState<string>("")
+  const { 
+    notes, 
+    selectedNote, 
+    selectNote, 
+    deleteNote, 
+    addNote, 
+    hasChanges, 
+    notesDir,
+    changeNotesDir,
+    resetNotesDir
+  } = useNotes()
   const [showDropdown, setShowDropdown] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    const loadNotesDir = async () => {
-      const dir = await window.note.getNotesDir()
-      setNotesDir(dir)
-    }
-    loadNotesDir()
-  }, [])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -48,32 +49,6 @@ export function NoteList() {
     addNote()
   }
 
-  const handleChangeNotesDir = async () => {
-    if (hasChanges) {
-      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
-      if (!response) return
-    }
-    const newDir = await window.note.setNotesDir()
-    if (newDir) {
-      setNotesDir(newDir)
-      unSelectNote()
-      refreshNotes()
-    }
-  }
-
-  const handleResetNotesDir = async () => {
-    if (hasChanges) {
-      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
-      if (!response) return
-    }
-    const defaultDir = await window.note.resetNotesDir()
-    if (defaultDir) {
-      setNotesDir(defaultDir)
-      unSelectNote()
-      refreshNotes()
-    }
-  }
-
   return (
     <div className="flex flex-col h-full" ref={containerRef}>
       <div className="flex h-8 items-center border-b px-4 mt-2">
@@ -85,7 +60,7 @@ export function NoteList() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleResetNotesDir}>
+                  <Button variant="ghost" size="icon" onClick={resetNotesDir}>
                     <Home className="size-4" />
                   </Button>
                 </TooltipTrigger>
@@ -97,7 +72,7 @@ export function NoteList() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={handleChangeNotesDir}>
+                  <Button variant="ghost" size="icon" onClick={changeNotesDir}>
                     <FolderOpen className="size-4" />
                   </Button>
                 </TooltipTrigger>
@@ -129,11 +104,11 @@ export function NoteList() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleResetNotesDir}>
+                <DropdownMenuItem onClick={resetNotesDir}>
                   <Home className="mr-2 size-4" />
                   기본 경로로 변경
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleChangeNotesDir}>
+                <DropdownMenuItem onClick={changeNotesDir}>
                   <FolderOpen className="mr-2 size-4" />
                   노트 저장 폴더 변경
                   <div className="text-xs text-muted-foreground mt-1">현재 경로: {notesDir}</div>
