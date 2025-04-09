@@ -14,7 +14,7 @@ import { EDITOR_OPTIONS } from "@/lib/constants"
 import { useMonacoEditor } from "@/hooks/useMonacoEditor"
 import { useChatUI } from "@/contexts/ChatUIContext"
 export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React.RefObject<editor.IStandaloneCodeEditor>, setMonacoEditorRef: (editor: editor.IStandaloneCodeEditor | null) => void }) => {
-  const { selectedNote, title, setTitle, content, setContent, hasChanges, handleTitleChange, handleEditorChange, handleSave, closeEditor } = useEditor()
+  const { selectedNote, title, content, hasChanges, handleTitleChange, handleEditorChange, handleSave, closeEditor } = useEditor()
 
   const { addSelectedText, setEditorRef } = useChat()
   const { hasApiKey } = useChatUI()
@@ -86,28 +86,6 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
     }
   }, [showInlineChat])
 
-  /**
-   * 노트 데이터 동기화를 위한 useEffect
-   * 
-   * 이 useEffect는 다음 두 가지 상황에서 실행됩니다:
-   * 1. 컴포넌트의 최초 마운트 시점
-   * 2. selectedNote가 변경될 때 (다른 노트를 선택했을 때)
-   * 
-   * 이는 사용자가 직접 수정하는 handleTitleChange/handleEditorChange와는
-   * 다른 시점에 실행되는 별개의 동작입니다:
-   * - handleTitleChange/handleEditorChange: 사용자의 직접적인 입력에 반응
-   * - 이 useEffect: 노트 선택 변경에 반응
-   * 
-   * @dependencies selectedNote - 현재 선택된 노트 객체
-   * 
-   * @sideEffects
-   * - content 상태를 selectedNote.content로 초기화/업데이트
-   * - title 상태를 selectedNote.title로 초기화/업데이트
-   */
-  useEffect(() => {
-    setContent(selectedNote?.content || "")
-    setTitle(selectedNote?.title || "")
-  }, [selectedNote])
 
   /**
    * 저장 단축키(cmd+s) 이벤트 핸들러를 설정하는 useEffect

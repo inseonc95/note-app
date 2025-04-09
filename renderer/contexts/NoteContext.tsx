@@ -104,6 +104,7 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
       if (selectedNote?.id === id) {
         setSelectedNote(prev => prev?.id === id ? updatedNote : prev)
       }
+      setHasChanges(false)
     } catch (error) {
       console.error('Failed to update note:', error)
     }
