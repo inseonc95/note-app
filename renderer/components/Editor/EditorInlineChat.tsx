@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Check, Send, X } from "lucide-react"
-
+import { Loader2 } from "lucide-react"
 
 export const EditorInlineChat = ({
   position,
@@ -12,6 +12,7 @@ export const EditorInlineChat = ({
   onChange,
   onApply,
   onClose,
+  isLoading,
 }: {
   position: { top: number; left: number };
   showPreview: boolean;
@@ -22,6 +23,7 @@ export const EditorInlineChat = ({
   onChange: (value: string) => void;
   onApply: () => void;
   onClose: () => void;
+  isLoading: boolean;
 }) => {
   return (
     <div
@@ -46,10 +48,15 @@ export const EditorInlineChat = ({
                 onSubmit(e)
               }
             }}
+            disabled={isLoading}
           />
-          <Button type="submit" size="icon" className="h-6 w-6">
-            <Send className="size-3" />
-          </Button>
+          {isLoading ? (
+            <Loader2 className="size-3 animate-spin" />
+          ) : (
+            <Button type="submit" size="icon" className="h-6 w-6">
+              <Send className="size-3" />
+            </Button>
+          )}
         </form>
       ) : (
         <div className="flex flex-col gap-2 bg-background rounded-md p-2">

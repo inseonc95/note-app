@@ -3,9 +3,13 @@ import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Send, Trash2, Copy, Check, CheckCircle, X, Key } from "lucide-react"
 import { useChatUI } from "@/contexts/ChatUIContext"
+import { useState } from "react"
+
 export const AIChatInput = () => {
   const { selectedTexts, clearSelectedTexts, removeSelectedText, clearMessages, sendMessage, chatInputRef } = useChat()
-  const { isLoading, setIsLoading, hasApiKey } = useChatUI()
+  const { hasApiKey } = useChatUI()
+
+  const [isLoading, setIsLoading] = useState(false)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 

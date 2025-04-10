@@ -20,9 +20,8 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
 
   const { openedNotes, selectNote } = useNotes()
 
-  const { addSelectedText, setEditorRef } = useChat()
-  const { hasApiKey } = useChatUI()
-  const { isShowAIChat, toggleAIChat } = useChatUI()
+  const { addSelectedText, setEditorRef, sendMessageToInlineChat } = useChat()
+  const { hasApiKey, isShowAIChat, toggleAIChat } = useChatUI()
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const [showToolbar, setShowToolbar] = useState(false)
   
@@ -33,6 +32,7 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   const [inlineChatContent, setInlineChatContent] = useState("")
   const [showInlineChat, setShowInlineChat] = useState(false)
   const [inlineChatTargetContent, setInlineChatTargetContent] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
   
   const [showPreview, setShowPreview] = useState(false)
 
@@ -445,17 +445,14 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
       return
     }
     e.preventDefault()
-    const response = await window.chat.sendMessage(
-      [
-        {
-          role: "user",
-          content: inlineChatContent
-        },
-      ], 
-      inlineChatTargetContent
-    )
-    setInlineChatContent(response)
-    setShowPreview(true)
+    setIsLoading(true)
+    try {
+      const response = await sendMessageToInlineChat(inlineChatContent, inlineChatTargetContent)
+      setInlineChatContent(response)
+      setShowPreview(true)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   /**
@@ -578,6 +575,7 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
                   onChange={setInlineChatContent}
                   onApply={handleApplyPreview}
                   onClose={closeInlineChat}
+                  isLoading={isLoading}
                 />
               )}
               {showToolbar && (

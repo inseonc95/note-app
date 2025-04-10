@@ -31,6 +31,9 @@ interface ChatContextType {
   // AIChatInput 참조 관리
   chatInputRef: React.RefObject<HTMLTextAreaElement>
   focusChatInput: () => void // AIChatInput에서 호출
+
+  // InlineChat 메시지 전송
+  sendMessageToInlineChat: (content: string, context: string) => Promise<string>
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -122,6 +125,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const sendMessageToInlineChat = async (content: string, context: string) => {
+    const response = await window.chat.sendMessage(
+      [{ role: "user" as const, content: content }],
+      context
+    )
+    return response
+  }
+
   return (
     <ChatContext.Provider
       value={{
@@ -136,6 +147,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         sendMessage,
         chatInputRef,
         focusChatInput,
+        sendMessageToInlineChat,
       }}
     >
       {children}

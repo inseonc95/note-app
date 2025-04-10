@@ -1,9 +1,6 @@
 import { createContext, useContext, useState, useRef, ReactNode, useCallback, useEffect } from "react"
 
 interface ChatUIContextType {
-  // 로딩 상태 관리
-  isLoading: boolean
-  setIsLoading: (loading: boolean) => void
 
   // AI Chat 패널 상태 관리
   isShowAIChat: boolean
@@ -20,7 +17,6 @@ interface ChatUIContextType {
 const ChatUIContext = createContext<ChatUIContextType | undefined>(undefined)
 
 export function ChatUIProvider({ children }: { children: ReactNode }) {
-  const [isLoading, setIsLoading] = useState(false)
   const [isShowAIChat, setIsShowAIChat] = useState(false)
   const [hasApiKey, setHasApiKey] = useState(false)
 
@@ -50,7 +46,7 @@ export function ChatUIProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <ChatUIContext.Provider value={{ isLoading, setIsLoading, isShowAIChat, toggleAIChat, hasApiKey, saveApiKey }}>
+    <ChatUIContext.Provider value={{ isShowAIChat, toggleAIChat, hasApiKey, saveApiKey }}>
       {children}
     </ChatUIContext.Provider>
   )
