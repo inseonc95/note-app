@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Check, Send, X } from "lucide-react"
 import { Loader2 } from "lucide-react"
+import { useEffect } from "react"
 
 export const EditorInlineChat = ({
   position,
@@ -25,6 +26,23 @@ export const EditorInlineChat = ({
   onClose: () => void;
   isLoading: boolean;
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showPreview && e.key === 'Enter') {
+        e.preventDefault();
+        onApply();
+      }
+    };
+
+    if (showPreview) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showPreview, onApply]);
+
   return (
     <div
     className="fixed z-50 p-2 bg-accent rounded-md shadow-lg"
@@ -44,16 +62,18 @@ export const EditorInlineChat = ({
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault()
-                onSubmit(e)
+                e.preventDefault();
+                onSubmit(e);
               }
             }}
             disabled={isLoading}
           />
           {isLoading ? (
-            <Loader2 className="size-3 animate-spin" />
+            <div className="h-5 w-5 flex items-center justify-center">
+              <Loader2 className="size-3 animate-spin" />
+            </div>
           ) : (
-            <Button type="submit" size="icon" className="h-6 w-6">
+            <Button type="submit" size="icon" className="h-5 w-5">
               <Send className="size-3" />
             </Button>
           )}

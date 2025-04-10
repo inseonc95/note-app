@@ -8,14 +8,14 @@ import { useNotes } from "@/contexts/NoteContext"
 import { useChatUI } from "@/contexts/ChatUIContext"
 
 
-export const AIChatMessages = () => {
+export const AIChatMessages = ({ isLoading }: { isLoading: boolean}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [appliedId, setAppliedId] = useState<string | null>(null)
 
   
-  const { messages, applyToEditor } = useChat()
-  const { isLoading } = useChatUI()
+  const { messages, applyToEditor, chatInputRef } = useChat()
+  // const { isLoading } = useChatUI()
   const { selectedNote } = useNotes()
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -23,6 +23,7 @@ export const AIChatMessages = () => {
 
   useEffect(() => {
     scrollToBottom()
+    chatInputRef.current?.focus()
   }, [messages])
 
   const handleCopy = async (messageId: string, content: string) => {
