@@ -13,8 +13,12 @@ import { useEditor } from "@/hooks/useEditor"
 import { EDITOR_OPTIONS } from "@/lib/constants"
 import { useMonacoEditor } from "@/hooks/useMonacoEditor"
 import { useChatUI } from "@/contexts/ChatUIContext"
+import { useNotes } from "@/contexts/NoteContext"
+
 export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React.RefObject<editor.IStandaloneCodeEditor>, setMonacoEditorRef: (editor: editor.IStandaloneCodeEditor | null) => void }) => {
-  const { selectedNote, title, content, hasChanges, handleTitleChange, handleEditorChange, handleSave, closeEditor } = useEditor()
+  const { selectedNote, title, content, hasChanges, handleTitleChange, handleEditorChange, handleSave } = useEditor()
+
+  const { openedNotes, selectNote } = useNotes()
 
   const { addSelectedText, setEditorRef } = useChat()
   const { hasApiKey } = useChatUI()
@@ -473,40 +477,69 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
   const handleApplyPreview = () => {
     if (!editorRef.current) return
 
-    const position = editorRef.current.getPosition()
-    if (!position) return
-
-    const model = editorRef.current.getModel()
-    if (!model) return
-
-    // 현재 편집을 undo 스택에 추가
-    model.pushEditOperations(
-      [],
-      [{
-        range: {
-          startLineNumber: position.lineNumber,
-          startColumn: position.column,
-          endLineNumber: position.lineNumber,
-          endColumn: position.column
-        },
-        text: inlineChatContent,
-        forceMoveMarkers: true
-      }],
-      () => null
-    )
+    const selection = editorRef.current.getSelection()
+    if (selection) {
+      // 선택된 텍스트가 있는 경우: 선택된 텍스트의 끝 위치에 삽입
+      const model = editorRef.current.getModel()
+      if (model) {
+        model.pushEditOperations(
+          [],
+          [{
+            range: {
+              startLineNumber: selection.endLineNumber,
+              startColumn: selection.endColumn,
+              endLineNumber: selection.endLineNumber,
+              endColumn: selection.endColumn
+            },
+            text: `\n${inlineChatContent}\n`,
+            forceMoveMarkers: true
+          }],
+          () => null
+        )
+      }
+    } else {
+      // 선택된 텍스트가 없는 경우: 현재 커서 위치에 삽입
+      const currentPosition = editorRef.current.getPosition()
+      if (currentPosition) {
+        const model = editorRef.current.getModel()
+        if (model) {
+          model.pushEditOperations(
+            [],
+            [{
+              range: {
+                startLineNumber: currentPosition.lineNumber,
+                startColumn: currentPosition.column,
+                endLineNumber: currentPosition.lineNumber,
+                endColumn: currentPosition.column
+              },
+              text: `\n${inlineChatContent}\n`,
+              forceMoveMarkers: true
+            }],
+            () => null
+          )
+        }
+      }
+    }
 
     closeInlineChat()
   }
 
   return (
     <div className="flex h-full flex-col">
+      {/* {openedNotes.map(note => (
+        <div key={note.id}>
+          {note.title}
+        </div>
+      ))} */}
       <div className="flex-1 overflow-hidden">
         <div className="p-2 relative ">
           <EditorHeader
+            openedNotes={openedNotes}
             title={title}
             hasChanges={hasChanges}
             selectedNote={selectedNote}
-            onClose={closeEditor}
+            // onClose={closeEditor}
+            selectNote={selectNote}
           />
           <div className="border rounded-r-md rounded-bl-md">
             <div className="relative pt-5">
@@ -525,13 +558,15 @@ export const NoteEditor = ({ editorRef, setMonacoEditorRef }: { editorRef: React
             </div>
             <div className="relative p-1">
               <Editor
-                height="calc(100vh - 11rem)"
+                height="calc(100vh - 16rem)"
                 defaultLanguage="markdown"
                 value={content}
                 onChange={handleEditorChange}
                 onMount={handleEditorMount}
                 options={EDITOR_OPTIONS}
               />
+            <div className="h-[4rem]">
+            </div>
               {showInlineChat && (
                 <EditorInlineChat
                   position={buttonPosition}

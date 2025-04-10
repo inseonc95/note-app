@@ -2,7 +2,7 @@ import { editor } from 'monaco-editor'
 
 export const EDITOR_OPTIONS: editor.IStandaloneEditorConstructionOptions = {
   minimap: { enabled: false },
-  lineNumbers: 'off',
+  lineNumbers: 'on',
   scrollBeyondLastLine: false,
   wordWrap: 'on',
   fontSize: 14,

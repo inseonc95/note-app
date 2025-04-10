@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { useNotes } from "../contexts/NoteContext"
 
 export const useEditor = () => {
-  const { selectedNote, updateNote, unSelectNote, hasChanges, setHasChanges } = useNotes()
+  const { selectedNote, updateNote, hasChanges, setHasChanges } = useNotes()
   const [content, setContent] = useState(selectedNote?.content || "")
   const [title, setTitle] = useState(selectedNote?.title || "")
 
@@ -98,13 +98,7 @@ export const useEditor = () => {
   }
 
 
-  const closeEditor = () => {
-    if (hasChanges) {
-      const response = confirm('저장되지 않은 변경사항이 있습니다. 저장하지 않고 진행하시겠습니까?')
-      if (!response) return
-    }
-    unSelectNote()
-  }
+
 
   return {
     selectedNote,
@@ -116,6 +110,6 @@ export const useEditor = () => {
     handleTitleChange,
     handleEditorChange,
     handleSave,
-    closeEditor,
+    // closeEditor,
   }
 }

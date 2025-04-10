@@ -9,13 +9,14 @@ interface NoteContextType {
   updateNote: (id: string, note: Partial<Note>) => void
   deleteNote: (id: string) => void
   selectNote: (id: string) => void
-  unSelectNote: () => void
   hasChanges: boolean
   setHasChanges: (hasChanges: boolean) => void
   loadAndSyncNotes: () => void
   notesDir: string
   changeNotesDir: () => Promise<void>
   resetNotesDir: () => Promise<void>
+  openedNotes: Note[]
+  closeNote: (id: string) => void
 }
 
 const NoteContext = createContext<NoteContextType | null>(null)
@@ -25,6 +26,8 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null)
   const [hasChanges, setHasChanges] = useState(false)
   const [notesDir, setNotesDir] = useState("")
+
+  const [openedNotes, setOpenedNotes] = useState<Note[]>([])
 
   const loadAndSyncNotes = useCallback(async () => {
     const loadedNotes = await window.note.loadNotes()
@@ -67,6 +70,7 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
     try {
       await window.note.saveNote(newNote)
       setNotes([...notes, newNote])
+      setOpenedNotes([...openedNotes, newNote])
       setSelectedNote(newNote)
     } catch (error) {
       console.error('Failed to add note:', error)
@@ -80,6 +84,7 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
       const updatedNotes = notes.filter(note => note.id !== id)
       setNotes(updatedNotes)
       if (selectedNote?.id === id) {
+        setOpenedNotes(openedNotes.filter(note => note.id !== id))
         setSelectedNote(updatedNotes[0] || null)
       }
     } catch (error) {
@@ -91,13 +96,32 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
     const note = notes.find(note => note.id === id)
     if (note) {
       setHasChanges(false)
+      if (!openedNotes.some(n => n.id === id)) {
+        setOpenedNotes([...openedNotes, note])
+      }
       setSelectedNote(note)
     }
   }
 
-  const unSelectNote = () => {
+  const initOpenedNote = () => {
     setSelectedNote(null)
+    setOpenedNotes([])
     setHasChanges(false)
+  }
+  
+
+  const closeNote = (id: string) => {
+    setOpenedNotes(prev => {
+      const remainingNotes = prev.filter(note => note.id !== id)
+      if (selectedNote?.id === id) {
+        setSelectedNote(remainingNotes[remainingNotes.length - 1] || null)
+      }
+      return remainingNotes
+    })
+
+    if (id === selectedNote?.id) {
+      setHasChanges(false)
+    }
   }
 
   const updateNote = useCallback(async (id: string, updates: Partial<Note>) => {
@@ -116,6 +140,7 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
       if (selectedNote?.id === id) {
         setSelectedNote(prev => prev?.id === id ? updatedNote : prev)
       }
+      setOpenedNotes(prev => prev.map(note => note.id === id ? updatedNote : note))
       setHasChanges(false)
     } catch (error) {
       console.error('Failed to update note:', error)
@@ -130,10 +155,10 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
     const newDir = await window.note.setNotesDir()
     if (newDir) {
       setNotesDir(newDir)
-      unSelectNote()
+      initOpenedNote()
       loadAndSyncNotes()
     }
-  }, [hasChanges, unSelectNote, loadAndSyncNotes])
+  }, [hasChanges, initOpenedNote, loadAndSyncNotes])
 
   const resetNotesDir = useCallback(async () => {
     if (hasChanges) {
@@ -143,10 +168,10 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
     const defaultDir = await window.note.resetNotesDir()
     if (defaultDir) {
       setNotesDir(defaultDir)
-      unSelectNote()
+      initOpenedNote()
       loadAndSyncNotes()
     }
-  }, [hasChanges, unSelectNote, loadAndSyncNotes])
+  }, [hasChanges, initOpenedNote, loadAndSyncNotes])
 
   return (
     <NoteContext.Provider
@@ -157,13 +182,14 @@ export function NoteProvider({ children }: { children: React.ReactNode }) {
         deleteNote,
         selectNote,
         updateNote,
-        unSelectNote,
         hasChanges,
         setHasChanges,
         loadAndSyncNotes,
         notesDir,
         changeNotesDir,
         resetNotesDir,
+        openedNotes,
+        closeNote,
       }}
     >
       {children}
